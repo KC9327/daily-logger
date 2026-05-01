@@ -1,12 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="theme-color" content="#1a1a2e" />
-    <title>Daily Command Center</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Daily Command Center</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:#f5f5f0;padding-bottom:80px}
+.card{background:#fff;border-radius:14px;border:1px solid #eee;padding:16px;margin-bottom:12px}
+.lbl{font-size:11px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:block}
+.inp{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;font-family:Georgia,serif;color:#222;background:#fafafa;outline:none;resize:none;margin-bottom:10px}
+.pbtn{width:100%;padding:12px;color:#fff;border:none;border-radius:10px;font-size:14px;font-family:Georgia,serif;cursor:pointer;margin-top:8px}
+.tbtn{padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:Georgia,serif;border:1px solid #ddd;background:transparent;color:#888;margin:3px}
+.sbtn{width:28px;height:28px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:16px;font-weight:700;color:#333}
+.dbtn{float:right;background:none;border:none;color:#ccc;font-size:18px;cursor:pointer}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:flex;padding:8px 4px 12px}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:6px 2px}
+.ai{background:#1a1a2e;border-radius:12px;padding:16px;color:#e8e4f0;font-size:14px;line-height:1.75;white-space:pre-wrap;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState} = React;
+
+const CATS=[
+  {n:"Prayer & Bible",bg:"#F0EEF8",tx:"#3C3489",br:"#9B8FD9"},
+  {n:"Gym & fitness",bg:"#EAF3DE",tx:"#27500A",br:"#639922"},
+  {n:"Deep work",bg:"#E6F1FB",tx:"#0C447C",br:"#378ADD"},
+  {n:"Office work",bg:"#E1F5EE",tx:"#085041",br:"#1D9E75"},
+  {n:"Study (AI/PMP)",bg:"#FAEEDA",tx:"#633806",br:"#EF9F27"},
+  {n:"Finance action",bg:"#FAECE7",tx:"#712B13",br:"#D85A30"},
+  {n:"Family time",bg:"#FBEAF0",tx:"#72243E",br:"#D4537E"},
+  {n:"Meals",bg:"#F1EFE8",tx:"#444441",br:"#888780"},
+  {n:"Commute",bg:"#E8E6E0",tx:"#2C2C2A",br:"#B4B2A9"},
+  {n:"Distraction",bg:"#FCEBEB",tx:"#791F1F",br:"#E24B4A"},
+  {n:"Rest",bg:"#EAF3DE",tx:"#27500A",br:"#97C459"},
+  {n:"Other",bg:"#F1EFE8",tx:"#444441",br:"#B4B2A9"},
+];
+const ECATS=["Food & Groceries","Transport","Bills & Utilities","Medicine","Family","Tithe","Emergency","Other"];
+const ICATS=["Skill (course/book)","Health investment","Tool/Equipment","Savings","Other"];
+const MUSCLES=["Push","Pull","Legs","Core","Cardio","Full body","Yoga/Mobility","Rest day"];
+const SUBJECTS=["AI/ML","PMP","Both"];
+const STYPES=["Bible reading","Morning prayer","Evening prayer","Family prayer","Reflection","Fasting","God spoke to me","Other"];
+const MOODS=["Peaceful","Grateful","Struggling","Dry","On fire","Seeking"];
+
+const CTX="You are a personal strategic advisor for a 33yo Christian man. Priority: 1) Spiritual 2) Health/gym 3) Skills(PMP+AI) and cash-flow freedom. Never say debt - say liability elimination. Be direct, warm, max 250 words.";
+const AKEY="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";
+
+function Tag({label,sel,onClick,bg,tx,br}){
+  return <button className="tbtn" onClick={onClick} style={{background:sel?(bg||"#EEEDFE"):"transparent",color:sel?(tx||"#3C3489"):"#888",border:sel?"1.5px solid "+(br||"#534AB7"):"1px solid #ddd",fontWeight:sel?600:400}}>{label}</button>;
+}
+
+function Dur({h,m,sh,sm}){
+  return <div style={{display:"flex",gap:12,alignItems:"center"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+      <span style={{fontSize:11,color:"#999"}}>HOURS</span>
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <button className="sbtn" onClick={()=>sh(Math.max(0,h-1))}>-</button>
+        <span style={{fontSize:20,fontWeight:700,minWidth:28,textAlign:"center"}}>{h}</span>
+        <button className="sbtn" onClick={()=>sh(Math.min(12,h+1))}>+</button>
+      </div>
+    </div>
+    <span style={{fontSize:22,color:"#ccc",marginTop:16}}>:</span>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+      <span style={{fontSize:11,color:"#999"}}>MINS</span>
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <button className="sbtn" onClick={()=>sm(Math.max(0,m-5))}>-</button>
+        <span style={{fontSize:20,fontWeight:700,minWidth:28,textAlign:"center"}}>{m}</span>
+        <button className="sbtn" onClick={()=>sm(Math.min(55,m+5))}>+</button>
+      </div>
+    </div>
+    <span style={{fontSize:13,color:"#999",marginTop:16}}>{h>0?h+"h ":""}{m}m</span>
+  </div>;
+}
+
+function AIBtn({prompt,label}){
+  const [load,setLoad]=useState(false);
+  const [res,setRes]=useState("");
+  async function run(){
+    setLoad(true);setRes("");
+    try{
+      const r=await fetch("https://api.openai.com/v1/chat/completions",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+AKEY},
+        body:JSON.stringify({model:"gpt-4o-mini",max_tokens:1000,messages:[{role:"system",content:CTX},{role:"user",content:prompt}]})
+      });
+      const d=await r.json();
+      setRes(d.choices[0].message.content);
+    }catch(e){setRes("Error. Check API key.");}
+    setLoad(false);
+  }
+  return <div style={{marginTop:16}}>
+    <button onClick={run} disabled={load} className="pbtn" style={{background:load?"#888":"#1a1a2e"}}>
+      {load?"Analysing...":"✦ "+label}
+    </button>
+    {res&&<div className="ai">{res}</div>}
+  </div>;
+}
+
+function Activity(){
+  const [entries,setEntries]=useState([]);
+  const [text,setText]=useState("");
+  const [cat,setCat]=useState(null);
+  const [h,setH]=useState(0);const [m,setM]=useState(30);
+  const [time,setTime]=useState(()=>{const n=new Date();return String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");});
+  function add(){
+    if(!text.trim()||!cat)return alert("Fill description and category");
+    const mins=h*60+m;
+    setEntries([...entries,{id:Date.now(),text,cat,mins,time}]);
+    setText("");setCat(null);setH(0);setM(30);
+  }
+  const total=entries.reduce((s,e)=>s+e.mins,0);
+  const grp={};entries.forEach(e=>{grp[e.cat]=(grp[e.cat]||0)+e.mins;});
+  const log=entries.map(e=>`${e.time} | ${e.cat} | ${Math.floor(e.mins/60)}h${e.mins%60}m | ${e.text}`).join("\n");
+  return <div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+      <div style={{background:"#1a1a2e",borderRadius:12,padding:14,color:"#fff",textAlign:"center"}}>
+        <div style={{fontSize:26,fontWeight:700}}>{entries.length}</div>
+        <div style={{fontSize:12,color:"#aaa",marginTop:2}}>Entries</div>
+      </div>
+      <div style={{background:"#1a1a2e",borderRadius:12,padding:14,color:"#fff",textAlign:"center"}}>
+        <div style={{fontSize:22,fontWeight:700}}>{Math.floor(total/60)}h {total%60}m</div>
+        <div style={{fontSize:12,color:"#aaa",marginTop:2}}>Tracked</div>
+      </div>
+    </div>
+    <div className="card">
+      <span className="lbl">Start time</span>
+      <input type="time" value={time} onChange={e=>setTime(e.target.value)} className="inp" style={{width:"auto"}}/>
+      <span className="lbl">What did you do?</span>
+      <textarea rows={2} value={text} onChange={e=>setText(e.target.value)} placeholder="Describe the activity..." className="inp"/>
+      <span className="lbl">Category</span>
+      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{CATS.map(c=><Tag key={c.n} label={c.n} sel={cat===c.n} onClick={()=>setCat(c.n)} bg={c.bg} tx={c.tx} br={c.br}/>)}</div>
+      <span className="lbl">Duration</span>
+      <Dur h={h} m={m} sh={setH} sm={setM}/>
+      <button onClick={add} className="pbtn" style={{background:"#1a1a2e"}}>+ Log activity</button>
+    </div>
+    {entries.length>0&&<>
+      <div className="card">
+        <span className="lbl">Time breakdown</span>
+        {Object.entries(grp).sort((a,b)=>b[1]-a[1]).map(([c,mins])=>{
+          const ct=CATS.find(x=>x.n===c);
+          const pct=Math.round((mins/total)*100);
+          return <div key={c} style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+              <span style={{fontSize:13}}>{c}</span>
+              <span style={{fontSize:13,color:"#888"}}>{Math.floor(mins/60)}h {mins%60}m</span>
+            </div>
+            <div style={{height:6,background:"#f0f0f0",borderRadius:4}}>
+              <div style={{height:6,width:pct+"%",background:ct?.br||"#534AB7",borderRadius:4}}/>
+            </div>
+          </div>;
+        })}
+      </div>
+      {[...entries].reverse().map(e=>{
+        const c=CATS.find(x=>x.n===e.cat);
+        return <div key={e.id} className="card">
+          <button className="dbtn" onClick={()=>setEntries(entries.filter(x=>x.id!==e.id))}>x</button>
+          <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:c?.bg||"#eee",color:c?.tx||"#333"}}>{e.cat}</span>
+          <div style={{fontSize:14,color:"#222",marginTop:6}}>{e.text}</div>
+          <div style={{fontSize:12,color:"#aaa",marginTop:4}}>{e.time} · {Math.floor(e.mins/60)}h {e.mins%60}m</div>
+        </div>;
+      })}
+      <AIBtn label="Review my day" prompt={"Review this day log:\n"+log+"\n\nTotal: "+Math.floor(total/60)+"h "+total%60+"m\n\nGive: 1)Identity statement 2)Time lost 3)Wins 4)Priority alignment 5)3 improvements for tomorrow 6)CEO mantra"}/>
+    </>}
+  </div>;
+}
+
+function Finance(){
+  const [expenses,setExpenses]=useState([]);
+  const [invs,setInvs]=useState([]);
+  const [tab,setTab]=useState("exp");
+  const [ed,setEd]=useState("");const [ea,setEa]=useState("");const [ec,setEc]=useState(null);
+  const [id,setId]=useState("");const [ia,setIa]=useState("");const [ic,setIc]=useState(null);
+  const te=expenses.reduce((s,e)=>s+parseFloat(e.a||0),0);
+  const ti=invs.reduce((s,e)=>s+parseFloat(e.a||0),0);
+  function addE(){if(!ed||!ea||!ec)return alert("Fill all fields");setExpenses([...expenses,{id:Date.now(),d:ed,a:ea,c:ec}]);setEd("");setEa("");setEc(null);}
+  function addI(){if(!id||!ia||!ic)return alert("Fill all fields");setInvs([...invs,{id:Date.now(),d:id,a:ia,c:ic}]);setId("");setIa("");setIc(null);}
+  const sum="Expenses (Rs."+te.toFixed(0)+"):\n"+expenses.map(e=>"- "+e.c+": "+e.d+" Rs."+e.a).join("\n")+"\nInvestments (Rs."+ti.toFixed(0)+"):\n"+invs.map(e=>"- "+e.c+": "+e.d+" Rs."+e.a).join("\n");
+  return <div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+      <div style={{background:"#7F0000",borderRadius:12,padding:14,color:"#fff",textAlign:"center"}}>
+        <div style={{fontSize:22,fontWeight:700}}>Rs.{te.toFixed(0)}</div>
+        <div style={{fontSize:12,color:"#ffaaaa",marginTop:2}}>Spent today</div>
+      </div>
+      <div style={{background:"#0F6E56",borderRadius:12,padding:14,color:"#fff",textAlign:"center"}}>
+        <div style={{fontSize:22,fontWeight:700}}>Rs.{ti.toFixed(0)}</div>
+        <div style={{fontSize:12,color:"#aaffd4",marginTop:2}}>Invested today</div>
+      </div>
+    </div>
+    <div style={{display:"flex",gap:8,marginBottom:14}}>
+      {["exp","inv"].map(t=><button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"9px 0",borderRadius:10,border:tab===t?"1.5px solid #1a1a2e":"1px solid #eee",background:tab===t?"#1a1a2e":"#fafafa",color:tab===t?"#fff":"#888",fontFamily:"Georgia,serif",fontSize:13,cursor:"pointer",fontWeight:tab===t?600:400}}>{t==="exp"?"Expense":"Investment"}</button>)}
+    </div>
+    {tab==="exp"&&<div className="card">
+      <span className="lbl">Category</span>
+      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{ECATS.map(c=><Tag key={c} label={c} sel={ec===c} onClick={()=>setEc(c)}/>)}</div>
+      <span className="lbl">Description</span>
+      <input value={ed} onChange={e=>setEd(e.target.value)} placeholder="e.g. DMart groceries" className="inp"/>
+      <span className="lbl">Amount (Rs.)</span>
+      <input type="number" value={ea} onChange={e=>setEa(e.target.value)} placeholder="0" className="inp" style={{width:140}}/>
+      <button onClick={addE} className="pbtn" style={{background:"#7F0000"}}>+ Add expense</button>
+      {expenses.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"0.5px solid #f0f0f0"}}>
+        <div><span style={{fontSize:13}}>{e.d}</span><span style={{fontSize:11,color:"#aaa",marginLeft:8}}>{e.c}</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14,fontWeight:600,color:"#7F0000"}}>Rs.{e.a}</span>
+          <button className="dbtn" onClick={()=>setExpenses(expenses.filter(x=>x.id!==e.id))}>x</button>
+        </div>
+      </div>)}
+    </div>}
+    {tab==="inv"&&<div className="card">
+      <span className="lbl">Category</span>
+      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{ICATS.map(c=><Tag key={c} label={c} sel={ic===c} onClick={()=>setIc(c)} bg="#EAF3DE" tx="#27500A" br="#639922"/>)}</div>
+      <span className="lbl">Description</span>
+      <input value={id} onChange={e=>setId(e.target.value)} placeholder="e.g. PMP study material" className="inp"/>
+      <span className="lbl">Amount (Rs.)</span>
+      <input type="number" value={ia} onChange={e=>setIa(e.target.value)} placeholder="0" className="inp" style={{width:140}}/>
+      <button onClick={addI} className="pbtn" style={{background:"#0F6E56"}}>+ Add investment</button>
+      {invs.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"0.5px solid #f0f0f0"}}>
+        <div><span style={{fontSize:13}}>{e.d}</span><span style={{fontSize:11,color:"#aaa",marginLeft:8}}>{e.c}</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14,fontWeight:600,color:"#0F6E56"}}>Rs.{e.a}</span>
+          <button className="dbtn" onClick={()=>setInvs(invs.filter(x=>x.id!==e.id))}>x</button>
+        </div>
+      </div>)}
+    </div>}
+    {(expenses.length>0||invs.length>0)&&<AIBtn label="Get financial insights" prompt={"Analyse today finances:\n"+sum+"\n\nGive: 1)Spending pattern 2)Alignment with cash-flow freedom 3)One thing to cut 4)Tip for tomorrow 5)Motivational framing"}/>}
+  </div>;
+}
+
+function Gym(){
+  const [muscle,setMuscle]=useState(null);
+  const [energy,setEnergy]=useState(null);
+  const [exs,setExs]=useState([]);
+  const [en,setEn]=useState("");const [es,setEs]=useState("");const [er,setEr]=useState("");const [ew,setEw]=useState("");
+  const [notes,setNotes]=useState("");
+  const [h,setH]=useState(0);const [m,setM]=useState(45);
+  function addEx(){if(!en.trim())return;setExs([...exs,{id:Date.now(),n:en,s:es,r:er,w:ew}]);setEn("");setEs("");setEr("");setEw("");}
+  const sum="Muscle: "+(muscle||"?")+" | Energy: "+(energy||"?")+" | Duration: "+h+"h "+m+"m\nExercises:\n"+exs.map(e=>"- "+e.n+": "+e.s+" sets x "+e.r+" reps @ "+e.w+"kg").join("\n")+"\nNotes: "+(notes||"none");
+  return <div>
+    <div className="card">
+      <span className="lbl">Muscle group</span>
+      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{MUSCLES.map(g=><Tag key={g} label={g} sel={muscle===g} onClick={()=>setMuscle(g)} bg="#EAF3DE" tx="#27500A" br="#639922"/>)}</div>
+      <span className="lbl">Energy</span>
+      <div style={{display:"flex",gap:8,marginBottom:12}}>{["High","Medium","Low"].map(e=><button key={e} onClick={()=>setEnergy(e)} style={{flex:1,padding:"8px 0",borderRadius:10,border:energy===e?"1.5px solid #639922":"1px solid #eee",background:energy===e?"#EAF3DE":"#fafafa",color:energy===e?"#27500A":"#888",fontFamily:"Georgia,serif",fontSize:13,cursor:"pointer",fontWeight:energy===e?600:400}}>{e}</button>)}</div>
+      <span className="lbl">Duration</span>
+      <Dur h={h} m={m} sh={setH} sm={setM}/>
+    </div>
+    <div className="card">
+      <span className="lbl">Log exercise</span>
+      <input value={en} onChange={e=>setEn(e.target.value)} placeholder="Exercise name" className="inp"/>
+      <div style={{display:"flex",gap:8}}>
+        <input value={es} onChange={e=>setEs(e.target.value)} placeholder="Sets" className="inp" style={{flex:1}}/>
+        <input value={er} onChange={e=>setEr(e.target.value)} placeholder="Reps" className="inp" style={{flex:1}}/>
+        <input value={ew} onChange={e=>setEw(e.target.value)} placeholder="kg" className="inp" style={{flex:1}}/>
+      </div>
+      <button onClick={addEx} className="pbtn" style={{background:"#27500A",marginTop:4}}>+ Add exercise</button>
+      {exs.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"0.5px solid #f0f0f0"}}>
+        <span style={{fontSize:13}}>{e.n}</span>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          <span style={{fontSize:12,color:"#639922"}}>{e.s}x{e.r}@{e.w}kg</span>
+          <button className="dbtn" onClick={()=>setExs(exs.filter(x=>x.id!==e.id))}>x</button>
+        </div>
+      </div>)}
+    </div>
+    <div className="card">
+      <span className="lbl">Session notes</span>
+      <textarea rows={3} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Energy, injuries, pump, mood..." className="inp"/>
+    </div>
+    {(muscle||exs.length>0)&&<AIBtn label="Get gym insights" prompt={"Analyse gym session:\n"+sum+"\n\nGive: 1)Session assessment 2)Form tip for muscle group 3)Recovery recommendation 4)Next session target (specific numbers) 5)Coaching line"}/>}
+  </div>;
+}
+
+function Skills(){
+  const [sub,setSub]=useState(null);
+  const [energy,setEnergy]=useState(null);
+  const [topic,setTopic]=useState("");
+  const [learned,setLearned]=useState("");
+  const [struggle,setStruggle]=useState("");
+  const [progress,setProgress]=useState("");
+  const [h,setH]=useState(0);const [m,setM]=useState(50);
+  const sum="Subject: "+(sub||"?")+" | Energy: "+(energy||"?")+" | Duration: "+h+"h "+m+"m\nTopic: "+(topic||"?")+"\nLearned: "+(learned||"?")+"\nStruggled: "+(struggle||"none")+"\nProgress: "+(progress||"?");
+  return <div>
+    <div className="card">
+      <span className="lbl">Subject</span>
+      <div style={{display:"flex",gap:8,marginBottom:12}}>{SUBJECTS.map(s=><Tag key={s} label={s} sel={sub===s} onClick={()=>setSub(s)} bg="#FAEEDA" tx="#633806" br="#EF9F27"/>)}</div>
+      <span className="lbl">Energy</span>
+      <div style={{display:"flex",gap:8,marginBottom:12}}>{["High","Medium","Low"].map(e=><button key={e} onClick={()=>setEnergy(e)} style={{flex:1,padding:"8px 0",borderRadius:10,border:energy===e?"1.5px solid #EF9F27":"1px solid #eee",background:energy===e?"#FAEEDA":"#fafafa",color:energy===e?"#633806":"#888",fontFamily:"Georgia,serif",fontSize:13,cursor:"pointer",fontWeight:energy===e?600:400}}>{e}</button>)}</div>
+      <span className="lbl">Duration</span>
+      <Dur h={h} m={m} sh={setH} sm={setM}/>
+    </div>
+    <div className="card">
+      <span className="lbl">Topic studied</span>
+      <input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="e.g. PMP: Risk Management" className="inp"/>
+      <span className="lbl">What I learned</span>
+      <textarea rows={3} value={learned} onChange={e=>setLearned(e.target.value)} placeholder="Key insights, breakthroughs..." className="inp"/>
+      <span className="lbl">What I struggled with</span>
+      <textarea rows={2} value={struggle} onChange={e=>setStruggle(e.target.value)} placeholder="Any confusion..." className="inp"/>
+      <span className="lbl">Course progress</span>
+      <input value={progress} onChange={e=>setProgress(e.target.value)} placeholder="e.g. 40% done, Chapter 6 of 12" className="inp"/>
+    </div>
+    {(sub||learned)&&<AIBtn label="Get learning insights" prompt={"Analyse study session:\n"+sum+"\n\nGive: 1)Learning assessment 2)Concept clarity tip 3)Next session focus 4)ROI connection to financial freedom 5)Study strategy tip"}/>}
+  </div>;
+}
+
+function Spiritual(){
+  const [types,setTypes]=useState([]);
+  const [mood,setMood]=useState(null);
+  const [verse,setVerse]=useState("");
+  const [godSpoke,setGodSpoke]=useState("");
+  const [iSpoke,setISpoke]=useState("");
+  const [reflection,setReflection]=useState("");
+  const [h,setH]=useState(0);const [m,setM]=useState(30);
+  function toggleType(t){setTypes(types.includes(t)?types.filter(x=>x!==t):[...types,t]);}
+  const sum="Activities: "+(types.join(", ")||"?")+"\nMood: "+(mood||"?")+"\nDuration: "+h+"h "+m+"m\nVerse: "+(verse||"none")+"\nGod spoke: "+(godSpoke||"none")+"\nI spoke to God: "+(iSpoke||"none")+"\nReflection: "+(reflection||"none");
+  return <div>
+    <div className="card">
+      <span className="lbl">Spiritual activities</span>
+      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{STYPES.map(t=><Tag key={t} label={t} sel={types.includes(t)} onClick={()=>toggleType(t)} bg="#F0EEF8" tx="#3C3489" br="#9B8FD9"/>)}</div>
+      <span className="lbl">Heart condition</span>
+      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{MOODS.map(m=><Tag key={m} label={m} sel={mood===m} onClick={()=>setMood(m)} bg="#F0EEF8" tx="#3C3489" br="#9B8FD9"/>)}</div>
+      <span className="lbl">Duration</span>
+      <Dur h={h} m={m} sh={setH} sm={setM}/>
+    </div>
+    <div className="card">
+      <span className="lbl">Verse studied</span>
+      <input value={verse} onChange={e=>setVerse(e.target.value)} placeholder="e.g. Proverbs 13:11" className="inp"/>
+      <span className="lbl">What God spoke to me</span>
+      <textarea rows={3} value={godSpoke} onChange={e=>setGodSpoke(e.target.value)} placeholder="Impressions, convictions, peace..." className="inp"/>
+      <span className="lbl">What I spoke to God</span>
+      <textarea rows={3} value={iSpoke} onChange={e=>setISpoke(e.target.value)} placeholder="Petitions, gratitude, intercession..." className="inp"/>
+      <span className="lbl">Reflection</span>
+      <textarea rows={3} value={reflection} onChange={e=>setReflection(e.target.value)} placeholder="Deeper insight or growth today..." className="inp"/>
+    </div>
+    {(types.length>0||godSpoke)&&<AIBtn label="Get spiritual insights" prompt={"Reflect on spiritual life today (Christian faith):\n"+sum+"\n\nGive: 1)Spiritual affirmation 2)Verse reflection 3)Prayer focus for tomorrow 4)Growth nudge 5)Peace declaration for tomorrow. Tone: warm, pastoral, not preachy."}/>}
+  </div>;
+}
+
+const TABS=[
+  {id:"activity",icon:"◎",label:"Activity"},
+  {id:"finance",icon:"₹",label:"Finance"},
+  {id:"gym",icon:"◈",label:"Gym"},
+  {id:"skills",icon:"◐",label:"Skills"},
+  {id:"spiritual",icon:"✦",label:"Spirit"},
+];
+
+function App(){
+  const [tab,setTab]=useState("activity");
+  const hr=new Date().getHours();
+  const greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
+  const today=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  return <div style={{maxWidth:480,margin:"0 auto",paddingBottom:90}}>
+    <div style={{background:"#1a1a2e",padding:"20px 16px 16px",borderRadius:"0 0 20px 20px",marginBottom:16}}>
+      <p style={{fontSize:11,color:"#8888aa",letterSpacing:2,marginBottom:4}}>DAILY COMMAND CENTER</p>
+      <p style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:2}}>{greet}</p>
+      <p style={{fontSize:13,color:"#8888aa"}}>{today}</p>
+    </div>
+    <div style={{padding:"0 12px"}}>
+      {tab==="activity"&&<Activity/>}
+      {tab==="finance"&&<Finance/>}
+      {tab==="gym"&&<Gym/>}
+      {tab==="skills"&&<Skills/>}
+      {tab==="spiritual"&&<Spiritual/>}
+    </div>
+    <div className="nav">
+      {TABS.map(t=><button key={t.id} className="nb" onClick={()=>setTab(t.id)}>
+        <span style={{fontSize:18,color:tab===t.id?"#1a1a2e":"#ccc"}}>{t.icon}</span>
+        <span style={{fontSize:10,fontFamily:"Georgia,serif",color:tab===t.id?"#1a1a2e":"#bbb",fontWeight:tab===t.id?600:400,letterSpacing:0.5}}>{t.label}</span>
+      </button>)}
+    </div>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
 </html>
