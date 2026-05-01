@@ -109,8 +109,8 @@ function AIBtn({prompt,label}){
 
     setLoad(true);setRes("");
     try{
-      // 2. Call Google directly from the browser
-      const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+currentKey,{
+      // 2. Call Google directly from the browser (Updated to Gemini 2.5)
+      const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+currentKey,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -122,8 +122,9 @@ function AIBtn({prompt,label}){
       // 3. Handle errors or success
       if(d.error){
         setRes("API Error: "+d.error.message);
+        // If the key is rejected, wipe it so the user is prompted again next time
         if(d.error.code === 400 || d.error.code === 403) {
-          setApiKey(""); // Wipe the key if it's invalid so they can try again
+          setApiKey(""); 
         }
       } else {
         setRes(d.candidates[0].content.parts[0].text);
