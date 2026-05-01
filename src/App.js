@@ -600,7 +600,7 @@ export default function App() {
   return (
     <div style={{ fontFamily: "Georgia, serif", maxWidth: 480, margin: "0 auto", paddingBottom: 100 }}>
       <div style={{ background: "#1a1a2e", padding: "20px 16px 16px", borderRadius: "0 0 20px 20px", marginBottom: 16 }}>
-        <p style={{ fontSize: 11, color: "#8888aa", letterSpacing: 2, marginBottom: 4 }}>DAILY COMMAND CENTER</p>
+        <p style={{ fontSize: 11, color: "#8888aa", letterSpacing: 2, marginBottom: 4 }}>DAILY COMMAND CENTER v2</p>
         <p style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}</p>
         <p style={{ fontSize: 13, color: "#8888aa" }}>{today}</p>
       </div>
