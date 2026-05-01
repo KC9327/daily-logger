@@ -6,33 +6,47 @@ import { useState, useEffect } from "react";
 
 function useLocalStorage(key, initialValue) {
 
-  const [value, setValue] = useState(() => {
+  const [value, setValue] = useState(initialValue);
+
+  // Read from localStorage after mount — never auto-overwrite on load
+  useEffect(() => {
 
     try {
 
       const item = window.localStorage.getItem(key);
 
-      return item ? JSON.parse(item) : initialValue;
+      if (item) {
+
+        setValue(JSON.parse(item));
+
+      }
 
     } catch (error) {
 
-      return initialValue;
+      console.error("Error reading from localStorage", error);
 
     }
 
-  });
+  }, [key]);
 
+  // Write only when the user explicitly updates the value
+  const setValueAndSave = (newValue) => {
 
+    setValue(newValue);
 
-  useEffect(() => {
+    try {
 
-    window.localStorage.setItem(key, JSON.stringify(value));
+      window.localStorage.setItem(key, JSON.stringify(newValue));
 
-  }, [key, value]);
+    } catch (error) {
 
+      console.error("Error saving to localStorage", error);
 
+    }
 
-  return [value, setValue];
+  };
+
+  return [value, setValueAndSave];
 
 }
 
@@ -1202,7 +1216,7 @@ export default function App() {
 
       <div style={{ background: "#1a1a2e", padding: "20px 16px 16px", borderRadius: "0 0 20px 20px", marginBottom: 16 }}>
 
-        <p style={{ fontSize: 11, color: "#8888aa", letterSpacing: 2, marginBottom: 4 }}>DAILY COMMAND CENTER v2</p>
+        <p style={{ fontSize: 11, color: "#8888aa", letterSpacing: 2, marginBottom: 4 }}>DAILY COMMAND CENTER v3</p>
 
         <p style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}</p>
 
