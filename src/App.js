@@ -21,8 +21,6 @@ const MUSCLE_GROUPS = ["Push (Chest/Shoulders/Triceps)", "Pull (Back/Biceps)", "
 const STUDY_SUBJECTS = ["AI/ML", "PMP", "Both"];
 const SPIRITUAL_TYPES = ["Bible reading", "Morning prayer", "Evening prayer", "Family prayer", "Reflection", "Fasting", "God spoke to me", "Other"];
 
-const OPENAI_KEY = "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";
-
 const USER_CONTEXT = `You are a personal strategic advisor for this specific person:
 IDENTITY: 33-year-old man, disciplined path to financial freedom, deeply Christian faith.
 PRIORITY ORDER (absolute, never reorder):
@@ -61,23 +59,13 @@ function AIInsight({ prompt, label = "Get AI insights" }) {
     setLoading(true);
     setResult("");
     try {
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      const res = await fetch("/api/ai", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + OPENAI_KEY,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          max_tokens: 1000,
-          messages: [
-            { role: "system", content: USER_CONTEXT },
-            { role: "user", content: prompt },
-          ],
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: USER_CONTEXT + "\n\n" + prompt }),
       });
       const data = await res.json();
-      setResult(data.choices[0].message.content);
+      setResult(data.result || "No response");
     } catch {
       setResult("Something went wrong. Please try again.");
     }
