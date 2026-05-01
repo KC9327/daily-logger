@@ -1,5 +1,22 @@
 import { useState, useEffect } from "react";
+// Paste this right below: import { useState, useEffect } from "react";
 
+function useLocalStorage(key, initialValue) {
+  const [value, setValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      return initialValue;
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue];
+}
 const CATEGORIES = [
   { name: "Prayer & Bible", color: "#F0EEF8", text: "#3C3489", border: "#9B8FD9" },
   { name: "Gym & fitness", color: "#EAF3DE", text: "#27500A", border: "#639922" },
