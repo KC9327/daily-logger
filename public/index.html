@@ -26,6 +26,7 @@ body{font-family:Georgia,serif;background:#f5f5f0;padding-bottom:80px}
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
 const {useState} = React;
+const fmtDate = () => new Date().toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
 
 function useLocalStorage(key, init) {
   const [val, setVal] = useState(() => {
@@ -124,7 +125,7 @@ function Activity(){
   function add(){
     if(!text.trim()||!cat)return alert("Fill description and category");
     const mins=h*60+m;
-    setEntries([...entries,{id:Date.now(),text,cat,mins,time}]);
+    setEntries([...entries,{id:Date.now(),text,cat,mins,time,date:fmtDate()}]);
     setText("");setCat(null);setH(0);setM(30);
   }
   const total=entries.reduce((s,e)=>s+e.mins,0);
@@ -175,7 +176,7 @@ function Activity(){
           <button className="dbtn" onClick={()=>setEntries(entries.filter(x=>x.id!==e.id))}>x</button>
           <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:c?.bg||"#eee",color:c?.tx||"#333"}}>{e.cat}</span>
           <div style={{fontSize:14,color:"#222",marginTop:6}}>{e.text}</div>
-          <div style={{fontSize:12,color:"#aaa",marginTop:4}}>{e.time} · {Math.floor(e.mins/60)}h {e.mins%60}m</div>
+          <div style={{fontSize:12,color:"#aaa",marginTop:4}}>{e.date&&<span style={{background:"#f0f0f0",borderRadius:6,padding:"1px 7px",marginRight:6}}>{e.date}</span>}{e.time} · {Math.floor(e.mins/60)}h {e.mins%60}m</div>
         </div>;
       })}
       <AIBtn label="Review my day" prompt={"Review this day log:\n"+log+"\n\nTotal: "+Math.floor(total/60)+"h "+total%60+"m\n\nGive: 1)Identity statement 2)Time lost 3)Wins 4)Priority alignment 5)3 improvements for tomorrow 6)CEO mantra"}/>
@@ -191,8 +192,8 @@ function Finance(){
   const [id,setId]=useState("");const [ia,setIa]=useState("");const [ic,setIc]=useState(null);
   const te=expenses.reduce((s,e)=>s+parseFloat(e.a||0),0);
   const ti=invs.reduce((s,e)=>s+parseFloat(e.a||0),0);
-  function addE(){if(!ed||!ea||!ec)return alert("Fill all fields");setExpenses([...expenses,{id:Date.now(),d:ed,a:ea,c:ec}]);setEd("");setEa("");setEc(null);}
-  function addI(){if(!id||!ia||!ic)return alert("Fill all fields");setInvs([...invs,{id:Date.now(),d:id,a:ia,c:ic}]);setId("");setIa("");setIc(null);}
+  function addE(){if(!ed||!ea||!ec)return alert("Fill all fields");setExpenses([...expenses,{id:Date.now(),d:ed,a:ea,c:ec,date:fmtDate()}]);setEd("");setEa("");setEc(null);}
+  function addI(){if(!id||!ia||!ic)return alert("Fill all fields");setInvs([...invs,{id:Date.now(),d:id,a:ia,c:ic,date:fmtDate()}]);setId("");setIa("");setIc(null);}
   const sum="Expenses (Rs."+te.toFixed(0)+"):\n"+expenses.map(e=>"- "+e.c+": "+e.d+" Rs."+e.a).join("\n")+"\nInvestments (Rs."+ti.toFixed(0)+"):\n"+invs.map(e=>"- "+e.c+": "+e.d+" Rs."+e.a).join("\n");
   return <div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
@@ -217,7 +218,7 @@ function Finance(){
       <input type="number" value={ea} onChange={e=>setEa(e.target.value)} placeholder="0" className="inp" style={{width:140}}/>
       <button onClick={addE} className="pbtn" style={{background:"#7F0000"}}>+ Add expense</button>
       {expenses.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"0.5px solid #f0f0f0"}}>
-        <div><span style={{fontSize:13}}>{e.d}</span><span style={{fontSize:11,color:"#aaa",marginLeft:8}}>{e.c}</span></div>
+        <div><span style={{fontSize:13}}>{e.d}</span><span style={{fontSize:11,color:"#aaa",marginLeft:8}}>{e.c}</span>{e.date&&<span style={{fontSize:10,color:"#bbb",marginLeft:8}}>{e.date}</span>}</div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14,fontWeight:600,color:"#7F0000"}}>Rs.{e.a}</span>
           <button className="dbtn" onClick={()=>setExpenses(expenses.filter(x=>x.id!==e.id))}>x</button>
@@ -233,7 +234,7 @@ function Finance(){
       <input type="number" value={ia} onChange={e=>setIa(e.target.value)} placeholder="0" className="inp" style={{width:140}}/>
       <button onClick={addI} className="pbtn" style={{background:"#0F6E56"}}>+ Add investment</button>
       {invs.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"0.5px solid #f0f0f0"}}>
-        <div><span style={{fontSize:13}}>{e.d}</span><span style={{fontSize:11,color:"#aaa",marginLeft:8}}>{e.c}</span></div>
+        <div><span style={{fontSize:13}}>{e.d}</span><span style={{fontSize:11,color:"#aaa",marginLeft:8}}>{e.c}</span>{e.date&&<span style={{fontSize:10,color:"#bbb",marginLeft:8}}>{e.date}</span>}</div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14,fontWeight:600,color:"#0F6E56"}}>Rs.{e.a}</span>
           <button className="dbtn" onClick={()=>setInvs(invs.filter(x=>x.id!==e.id))}>x</button>
@@ -251,7 +252,7 @@ function Gym(){
   const [en,setEn]=useState("");const [es,setEs]=useState("");const [er,setEr]=useState("");const [ew,setEw]=useState("");
   const [notes,setNotes]=useLocalStorage("gym_notes","");
   const [h,setH]=useLocalStorage("gym_h",0);const [m,setM]=useLocalStorage("gym_m",45);
-  function addEx(){if(!en.trim())return;setExs([...exs,{id:Date.now(),n:en,s:es,r:er,w:ew}]);setEn("");setEs("");setEr("");setEw("");}
+  function addEx(){if(!en.trim())return;setExs([...exs,{id:Date.now(),n:en,s:es,r:er,w:ew,date:fmtDate()}]);setEn("");setEs("");setEr("");setEw("");}
   const sum="Muscle: "+(muscle||"?")+" | Energy: "+(energy||"?")+" | Duration: "+h+"h "+m+"m\nExercises:\n"+exs.map(e=>"- "+e.n+": "+e.s+" sets x "+e.r+" reps @ "+e.w+"kg").join("\n")+"\nNotes: "+(notes||"none");
   return <div>
     <div className="card">
@@ -272,7 +273,10 @@ function Gym(){
       </div>
       <button onClick={addEx} className="pbtn" style={{background:"#27500A",marginTop:4}}>+ Add exercise</button>
       {exs.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"0.5px solid #f0f0f0"}}>
-        <span style={{fontSize:13}}>{e.n}</span>
+        <div>
+          <span style={{fontSize:13}}>{e.n}</span>
+          {e.date&&<span style={{fontSize:10,color:"#bbb",marginLeft:8}}>{e.date}</span>}
+        </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           <span style={{fontSize:12,color:"#639922"}}>{e.s}x{e.r}@{e.w}kg</span>
           <button className="dbtn" onClick={()=>setExs(exs.filter(x=>x.id!==e.id))}>x</button>
@@ -367,7 +371,7 @@ function App(){
   const today=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   return <div style={{maxWidth:480,margin:"0 auto",paddingBottom:90}}>
     <div style={{background:"#1a1a2e",padding:"20px 16px 16px",borderRadius:"0 0 20px 20px",marginBottom:16}}>
-      <p style={{fontSize:11,color:"#8888aa",letterSpacing:2,marginBottom:4}}>DAILY COMMAND CENTER v5</p>
+      <p style={{fontSize:11,color:"#8888aa",letterSpacing:2,marginBottom:4}}>DAILY COMMAND CENTER v6</p>
       <p style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:2}}>{greet}</p>
       <p style={{fontSize:13,color:"#8888aa"}}>{today}</p>
     </div>
