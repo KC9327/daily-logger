@@ -95,19 +95,45 @@ function Dur({h,m,sh,sm}){
 function AIBtn({prompt,label}){
   const [load,setLoad]=useState(false);
   const [res,setRes]=useState("");
+  // Safely grab the API key from memory, or start empty
+  const [apiKey, setApiKey] = useLocalStorage("gemini_api_key", "");
+
   async function run(){
+    // 1. If no key is saved, ask for it securely!
+    let currentKey = apiKey;
+    if(!currentKey){
+      currentKey = window.prompt("Please enter your Google Gemini API Key.\n(It will be saved securely to this device's memory for future use):");
+      if(!currentKey) return; // User cancelled
+      setApiKey(currentKey);
+    }
+
     setLoad(true);setRes("");
     try{
-      const r=await fetch("/api/ai",{
+      // 2. Call Google directly from the browser
+      const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+currentKey,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({prompt:CTX+"\n\n"+prompt})
+        body:JSON.stringify({
+          contents: [{ parts: [{ text: CTX+"\n\n"+prompt }] }]
+        })
       });
       const d=await r.json();
-      setRes(d.result||"No response");
-    }catch(e){setRes("Error. Check API key or server logs.");}
+      
+      // 3. Handle errors or success
+      if(d.error){
+        setRes("API Error: "+d.error.message);
+        if(d.error.code === 400 || d.error.code === 403) {
+          setApiKey(""); // Wipe the key if it's invalid so they can try again
+        }
+      } else {
+        setRes(d.candidates[0].content.parts[0].text);
+      }
+    }catch(e){
+      setRes("Network Error. Check your internet connection.");
+    }
     setLoad(false);
   }
+
   return <div style={{marginTop:16}}>
     <button onClick={run} disabled={load} className="pbtn" style={{background:load?"#888":"#1a1a2e"}}>
       {load?"Analysing...":"✦ "+label}
