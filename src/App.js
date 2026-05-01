@@ -826,17 +826,17 @@ function FinanceModule() {
 
 function GymModule() {
 
-  const [muscleGroup, setMuscleGroup] = useState(null);
+  const [muscleGroup, setMuscleGroup] = useLocalStorage("gym_muscle", null);
 
-  const [energy, setEnergy] = useState(null);
+  const [energy, setEnergy] = useLocalStorage("gym_energy", null);
 
   const [exercises, setExercises] = useLocalStorage("gym_logs", []);
 
   const [exName, setExName] = useState(""); const [sets, setSets] = useState(""); const [reps, setReps] = useState(""); const [weight, setWeight] = useState("");
 
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useLocalStorage("gym_notes", "");
 
-  const [hours, setHours] = useState(0); const [minutes, setMinutes] = useState(45);
+  const [hours, setHours] = useLocalStorage("gym_hours", 0); const [minutes, setMinutes] = useLocalStorage("gym_minutes", 45);
 
 
 
@@ -974,19 +974,19 @@ function GymModule() {
 
 function SkillingModule() {
 
-  const [subject, setSubject] = useState(null);
+  const [subject, setSubject] = useLocalStorage("skill_subject", null);
 
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useLocalStorage("skill_topic", "");
 
-  const [learned, setLearned] = useState("");
+  const [learned, setLearned] = useLocalStorage("skill_learned", "");
 
-  const [struggle, setStruggle] = useState("");
+  const [struggle, setStruggle] = useLocalStorage("skill_struggle", "");
 
-  const [hours, setHours] = useState(0); const [minutes, setMinutes] = useState(50);
+  const [hours, setHours] = useLocalStorage("skill_hours", 0); const [minutes, setMinutes] = useLocalStorage("skill_minutes", 50);
 
-  const [progress, setProgress] = useState("");
+  const [progress, setProgress] = useLocalStorage("skill_progress", "");
 
-  const [energy, setEnergy] = useState(null);
+  const [energy, setEnergy] = useLocalStorage("skill_energy", null);
 
 
 
@@ -1072,19 +1072,19 @@ function SkillingModule() {
 
 function SpiritualModule() {
 
-  const [types, setTypes] = useState([]);
+  const [types, setTypes] = useLocalStorage("spirit_types", []);
 
-  const [verse, setVerse] = useState("");
+  const [verse, setVerse] = useLocalStorage("spirit_verse", "");
 
-  const [reflection, setReflection] = useState("");
+  const [reflection, setReflection] = useLocalStorage("spirit_reflection", "");
 
-  const [godSpoke, setGodSpoke] = useState("");
+  const [godSpoke, setGodSpoke] = useLocalStorage("spirit_godSpoke", "");
 
-  const [iSpoke, setISpoke] = useState("");
+  const [iSpoke, setISpoke] = useLocalStorage("spirit_iSpoke", "");
 
-  const [hours, setHours] = useState(0); const [minutes, setMinutes] = useState(30);
+  const [hours, setHours] = useLocalStorage("spirit_hours", 0); const [minutes, setMinutes] = useLocalStorage("spirit_minutes", 30);
 
-  const [mood, setMood] = useState(null);
+  const [mood, setMood] = useLocalStorage("spirit_mood", null);
 
 
 
