@@ -1,0 +1,2 @@
+# daily-logger
+Daily activity
