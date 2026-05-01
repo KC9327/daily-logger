@@ -27,6 +27,20 @@ body{font-family:Georgia,serif;background:#f5f5f0;padding-bottom:80px}
 <script type="text/babel" data-presets="react">
 const {useState} = React;
 
+function useLocalStorage(key, init) {
+  const [val, setVal] = useState(() => {
+    try {
+      const x = window.localStorage.getItem(key);
+      return x !== null ? JSON.parse(x) : init;
+    } catch(e) { return init; }
+  });
+  const save = (v) => {
+    setVal(v);
+    try { window.localStorage.setItem(key, JSON.stringify(v)); } catch(e) {}
+  };
+  return [val, save];
+}
+
 const CATS=[
   {n:"Prayer & Bible",bg:"#F0EEF8",tx:"#3C3489",br:"#9B8FD9"},
   {n:"Gym & fitness",bg:"#EAF3DE",tx:"#27500A",br:"#639922"},
@@ -102,7 +116,7 @@ function AIBtn({prompt,label}){
 }
 
 function Activity(){
-  const [entries,setEntries]=useState([]);
+  const [entries,setEntries]=useLocalStorage("act_entries",[]);
   const [text,setText]=useState("");
   const [cat,setCat]=useState(null);
   const [h,setH]=useState(0);const [m,setM]=useState(30);
@@ -170,8 +184,8 @@ function Activity(){
 }
 
 function Finance(){
-  const [expenses,setExpenses]=useState([]);
-  const [invs,setInvs]=useState([]);
+  const [expenses,setExpenses]=useLocalStorage("fin_exp",[]);
+  const [invs,setInvs]=useLocalStorage("fin_inv",[]);
   const [tab,setTab]=useState("exp");
   const [ed,setEd]=useState("");const [ea,setEa]=useState("");const [ec,setEc]=useState(null);
   const [id,setId]=useState("");const [ia,setIa]=useState("");const [ic,setIc]=useState(null);
@@ -231,12 +245,12 @@ function Finance(){
 }
 
 function Gym(){
-  const [muscle,setMuscle]=useState(null);
-  const [energy,setEnergy]=useState(null);
-  const [exs,setExs]=useState([]);
+  const [muscle,setMuscle]=useLocalStorage("gym_muscle",null);
+  const [energy,setEnergy]=useLocalStorage("gym_energy",null);
+  const [exs,setExs]=useLocalStorage("gym_exs",[]);
   const [en,setEn]=useState("");const [es,setEs]=useState("");const [er,setEr]=useState("");const [ew,setEw]=useState("");
-  const [notes,setNotes]=useState("");
-  const [h,setH]=useState(0);const [m,setM]=useState(45);
+  const [notes,setNotes]=useLocalStorage("gym_notes","");
+  const [h,setH]=useLocalStorage("gym_h",0);const [m,setM]=useLocalStorage("gym_m",45);
   function addEx(){if(!en.trim())return;setExs([...exs,{id:Date.now(),n:en,s:es,r:er,w:ew}]);setEn("");setEs("");setEr("");setEw("");}
   const sum="Muscle: "+(muscle||"?")+" | Energy: "+(energy||"?")+" | Duration: "+h+"h "+m+"m\nExercises:\n"+exs.map(e=>"- "+e.n+": "+e.s+" sets x "+e.r+" reps @ "+e.w+"kg").join("\n")+"\nNotes: "+(notes||"none");
   return <div>
@@ -274,13 +288,13 @@ function Gym(){
 }
 
 function Skills(){
-  const [sub,setSub]=useState(null);
-  const [energy,setEnergy]=useState(null);
-  const [topic,setTopic]=useState("");
-  const [learned,setLearned]=useState("");
-  const [struggle,setStruggle]=useState("");
-  const [progress,setProgress]=useState("");
-  const [h,setH]=useState(0);const [m,setM]=useState(50);
+  const [sub,setSub]=useLocalStorage("sk_sub",null);
+  const [energy,setEnergy]=useLocalStorage("sk_energy",null);
+  const [topic,setTopic]=useLocalStorage("sk_topic","");
+  const [learned,setLearned]=useLocalStorage("sk_learned","");
+  const [struggle,setStruggle]=useLocalStorage("sk_struggle","");
+  const [progress,setProgress]=useLocalStorage("sk_progress","");
+  const [h,setH]=useLocalStorage("sk_h",0);const [m,setM]=useLocalStorage("sk_m",50);
   const sum="Subject: "+(sub||"?")+" | Energy: "+(energy||"?")+" | Duration: "+h+"h "+m+"m\nTopic: "+(topic||"?")+"\nLearned: "+(learned||"?")+"\nStruggled: "+(struggle||"none")+"\nProgress: "+(progress||"?");
   return <div>
     <div className="card">
@@ -306,13 +320,13 @@ function Skills(){
 }
 
 function Spiritual(){
-  const [types,setTypes]=useState([]);
-  const [mood,setMood]=useState(null);
-  const [verse,setVerse]=useState("");
-  const [godSpoke,setGodSpoke]=useState("");
-  const [iSpoke,setISpoke]=useState("");
-  const [reflection,setReflection]=useState("");
-  const [h,setH]=useState(0);const [m,setM]=useState(30);
+  const [types,setTypes]=useLocalStorage("sp_types",[]);
+  const [mood,setMood]=useLocalStorage("sp_mood",null);
+  const [verse,setVerse]=useLocalStorage("sp_verse","");
+  const [godSpoke,setGodSpoke]=useLocalStorage("sp_godSpoke","");
+  const [iSpoke,setISpoke]=useLocalStorage("sp_iSpoke","");
+  const [reflection,setReflection]=useLocalStorage("sp_reflection","");
+  const [h,setH]=useLocalStorage("sp_h",0);const [m,setM]=useLocalStorage("sp_m",30);
   function toggleType(t){setTypes(types.includes(t)?types.filter(x=>x!==t):[...types,t]);}
   const sum="Activities: "+(types.join(", ")||"?")+"\nMood: "+(mood||"?")+"\nDuration: "+h+"h "+m+"m\nVerse: "+(verse||"none")+"\nGod spoke: "+(godSpoke||"none")+"\nI spoke to God: "+(iSpoke||"none")+"\nReflection: "+(reflection||"none");
   return <div>
@@ -353,16 +367,16 @@ function App(){
   const today=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   return <div style={{maxWidth:480,margin:"0 auto",paddingBottom:90}}>
     <div style={{background:"#1a1a2e",padding:"20px 16px 16px",borderRadius:"0 0 20px 20px",marginBottom:16}}>
-      <p style={{fontSize:11,color:"#8888aa",letterSpacing:2,marginBottom:4}}>DAILY COMMAND CENTER</p>
+      <p style={{fontSize:11,color:"#8888aa",letterSpacing:2,marginBottom:4}}>DAILY COMMAND CENTER v5</p>
       <p style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:2}}>{greet}</p>
       <p style={{fontSize:13,color:"#8888aa"}}>{today}</p>
     </div>
     <div style={{padding:"0 12px"}}>
-      {tab==="activity"&&<Activity/>}
-      {tab==="finance"&&<Finance/>}
-      {tab==="gym"&&<Gym/>}
-      {tab==="skills"&&<Skills/>}
-      {tab==="spiritual"&&<Spiritual/>}
+      <div style={{display:tab==="activity"?"block":"none"}}><Activity/></div>
+      <div style={{display:tab==="finance"?"block":"none"}}><Finance/></div>
+      <div style={{display:tab==="gym"?"block":"none"}}><Gym/></div>
+      <div style={{display:tab==="skills"?"block":"none"}}><Skills/></div>
+      <div style={{display:tab==="spiritual"?"block":"none"}}><Spiritual/></div>
     </div>
     <div className="nav">
       {TABS.map(t=><button key={t.id} className="nb" onClick={()=>setTab(t.id)}>
@@ -377,5 +391,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
-
-
