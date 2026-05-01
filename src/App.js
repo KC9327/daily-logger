@@ -202,7 +202,7 @@ const deleteBtn = {
 
 // ─── MODULE: Activity Log ───
 function ActivityModule() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useLocalStorage("activity_logs", []);
   const [text, setText] = useState("");
   const [category, setCategory] = useState(null);
   const [hours, setHours] = useState(0);
@@ -300,8 +300,8 @@ function ActivityModule() {
 
 // ─── MODULE: Finance ───
 function FinanceModule() {
-  const [expenses, setExpenses] = useState([]);
-  const [investments, setInvestments] = useState([]);
+  const [expenses, setExpenses] = useLocalStorage("finance_exp", []);
+  const [investments, setInvestments] = useLocalStorage("finance_inv", []);
   const [expDesc, setExpDesc] = useState(""); const [expAmt, setExpAmt] = useState(""); const [expCat, setExpCat] = useState(null);
   const [invDesc, setInvDesc] = useState(""); const [invAmt, setInvAmt] = useState(""); const [invCat, setInvCat] = useState(null);
   const [tab, setTab] = useState("expense");
@@ -414,7 +414,7 @@ function FinanceModule() {
 function GymModule() {
   const [muscleGroup, setMuscleGroup] = useState(null);
   const [energy, setEnergy] = useState(null);
-  const [exercises, setExercises] = useState([]);
+  const [exercises, setExercises] = useLocalStorage("gym_logs", []);
   const [exName, setExName] = useState(""); const [sets, setSets] = useState(""); const [reps, setReps] = useState(""); const [weight, setWeight] = useState("");
   const [notes, setNotes] = useState("");
   const [hours, setHours] = useState(0); const [minutes, setMinutes] = useState(45);
