@@ -1,21 +1,30 @@
 import { GoogleGenAI } from "@google/genai";
 
 export default async function handler(req, res) {
-  // Vercel requires this check to prevent 405 errors
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+  // 1. Check if Vercel can actually see your key
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(200).json({ 
+      result: "🚨 ERROR: Vercel cannot see your GEMINI_API_KEY. Go to Vercel Project Settings > Environment Variables, re-add it, make sure 'Production' is checked, and REDEPLOY." 
+    });
   }
 
   try {
     const { prompt } = req.body;
-    const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // 2. Initialize SDK
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    res.status(200).json({ result: response.text() });
+    // 3. Call Google
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt,
+    });
+
+    // 4. Send success
+    res.status(200).json({ result: response.text });
+    
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    // 5. If Google rejects the key or model, SHOW IT ON SCREEN
+    res.status(200).json({ result: `🚨 GOOGLE API ERROR: ${error.message}` });
   }
 }
