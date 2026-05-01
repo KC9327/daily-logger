@@ -49,7 +49,6 @@ const STYPES=["Bible reading","Morning prayer","Evening prayer","Family prayer",
 const MOODS=["Peaceful","Grateful","Struggling","Dry","On fire","Seeking"];
 
 const CTX="You are a personal strategic advisor for a 33yo Christian man. Priority: 1) Spiritual 2) Health/gym 3) Skills(PMP+AI) and cash-flow freedom. Never say debt - say liability elimination. Be direct, warm, max 250 words.";
-const AKEY="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";
 
 function Tag({label,sel,onClick,bg,tx,br}){
   return <button className="tbtn" onClick={onClick} style={{background:sel?(bg||"#EEEDFE"):"transparent",color:sel?(tx||"#3C3489"):"#888",border:sel?"1.5px solid "+(br||"#534AB7"):"1px solid #ddd",fontWeight:sel?600:400}}>{label}</button>;
@@ -84,14 +83,14 @@ function AIBtn({prompt,label}){
   async function run(){
     setLoad(true);setRes("");
     try{
-      const r=await fetch("https://api.openai.com/v1/chat/completions",{
+      const r=await fetch("/api/ai",{
         method:"POST",
-        headers:{"Content-Type":"application/json","Authorization":"Bearer "+AKEY},
-        body:JSON.stringify({model:"gpt-4o-mini",max_tokens:1000,messages:[{role:"system",content:CTX},{role:"user",content:prompt}]})
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prompt:CTX+"\n\n"+prompt})
       });
       const d=await r.json();
-      setRes(d.choices[0].message.content);
-    }catch(e){setRes("Error. Check API key.");}
+      setRes(d.result||"No response");
+    }catch(e){setRes("Error. Check API key or server logs.");}
     setLoad(false);
   }
   return <div style={{marginTop:16}}>
