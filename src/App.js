@@ -6,30 +6,22 @@ import { useState, useEffect } from "react";
 
 function useLocalStorage(key, initialValue) {
 
-  const [value, setValue] = useState(initialValue);
-
-  // Read from localStorage after mount — never auto-overwrite on load
-  useEffect(() => {
+  const [value, setValue] = useState(() => {
 
     try {
 
       const item = window.localStorage.getItem(key);
 
-      if (item) {
-
-        setValue(JSON.parse(item));
-
-      }
+      return item !== null ? JSON.parse(item) : initialValue;
 
     } catch (error) {
 
-      console.error("Error reading from localStorage", error);
+      return initialValue;
 
     }
 
-  }, [key]);
+  });
 
-  // Write only when the user explicitly updates the value
   const setValueAndSave = (newValue) => {
 
     setValue(newValue);
@@ -40,7 +32,7 @@ function useLocalStorage(key, initialValue) {
 
     } catch (error) {
 
-      console.error("Error saving to localStorage", error);
+      console.error("localStorage write failed", error);
 
     }
 
@@ -1216,7 +1208,7 @@ export default function App() {
 
       <div style={{ background: "#1a1a2e", padding: "20px 16px 16px", borderRadius: "0 0 20px 20px", marginBottom: 16 }}>
 
-        <p style={{ fontSize: 11, color: "#8888aa", letterSpacing: 2, marginBottom: 4 }}>DAILY COMMAND CENTER v3</p>
+        <p style={{ fontSize: 11, color: "#8888aa", letterSpacing: 2, marginBottom: 4 }}>DAILY COMMAND CENTER v4</p>
 
         <p style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}</p>
 
@@ -1228,15 +1220,15 @@ export default function App() {
 
       <div style={{ padding: "0 12px" }}>
 
-        {activeTab === "activity" && <ActivityModule />}
+        <div style={{ display: activeTab === "activity" ? "block" : "none" }}><ActivityModule /></div>
 
-        {activeTab === "finance" && <FinanceModule />}
+        <div style={{ display: activeTab === "finance" ? "block" : "none" }}><FinanceModule /></div>
 
-        {activeTab === "gym" && <GymModule />}
+        <div style={{ display: activeTab === "gym" ? "block" : "none" }}><GymModule /></div>
 
-        {activeTab === "skilling" && <SkillingModule />}
+        <div style={{ display: activeTab === "skilling" ? "block" : "none" }}><SkillingModule /></div>
 
-        {activeTab === "spiritual" && <SpiritualModule />}
+        <div style={{ display: activeTab === "spiritual" ? "block" : "none" }}><SpiritualModule /></div>
 
       </div>
 
