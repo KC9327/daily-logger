@@ -1,8 +1,8 @@
 {
-  "name": "My Chronicles",
+  "name": "James Chronicles",
   "short_name": "Chronicles",
-  "start_url": "/index.html",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F2F2F7",
   "theme_color": "#5E5CE6",
