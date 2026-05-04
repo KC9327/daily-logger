@@ -383,13 +383,25 @@ function Activity({ sessionKey }) {
 
   const categories = actStr.split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
 
-  function add(overrideMins = null) {
+  function add(elapsedSeconds = null) {
     if (!text.trim() || !cat) {
-      alert("Fill entry and category");
+      alert("Fill entry and category before saving or starting the clock.");
       return false;
     }
-    const totalMins = overrideMins !== null ? overrideMins : (h * 60 + m);
-    setEntries([...entries, { id: Date.now(), text, cat, mins: totalMins, time, date: fmtDate() }]);
+    
+    let displayTime = "";
+    if (elapsedSeconds !== null) {
+      // Format as MM:SS if stopwatch was used
+      const mins = Math.floor(elapsedSeconds / 60);
+      const secs = elapsedSeconds % 60;
+      displayTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}s`;
+    } else {
+      // Standard format if manual input was used
+      displayTime = `${h * 60 + m}m`;
+    }
+
+    // We store the display string in the 'mins' property to avoid changing the schema
+    setEntries([...entries, { id: Date.now(), text, cat, mins: displayTime, time, date: fmtDate() }]);
     setText(""); setCat(null); setH(0); setM(30);
     return true;
   }
@@ -420,10 +432,18 @@ function Activity({ sessionKey }) {
         <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
           <Dur h={h} m={m} sh={setH} sm={setM} />
           <button onClick={() => {
-            if (!startTime) { setStartTime(Date.now()); } 
+            if (!startTime) { 
+               // VALIDATION CHECK BEFORE STARTING
+               if (!text.trim() || !cat) {
+                 alert("Please enter what you did and select a category before starting the clock.");
+                 return;
+               }
+               setStartTime(Date.now()); 
+            } 
             else {
-              const diffMins = Math.floor((Date.now() - startTime) / 60000);
-              if (add(diffMins)) { setStartTime(null); }
+              // PASS SECONDS INSTEAD OF MINUTES
+              const diffSeconds = Math.floor((Date.now() - startTime) / 1000);
+              if (add(diffSeconds)) { setStartTime(null); }
             }
           }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
             {startTime ? `⏹ ${elapsed}` : "Start Clock"}
@@ -437,7 +457,7 @@ function Activity({ sessionKey }) {
           <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
           <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
           <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
-          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}m</div>
+          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}</div>
         </div>
       ))}
       <AIBtn label="Daily Review" prompt={`Analyze my day:\n${log}`} sessionKey={sessionKey} />
@@ -516,11 +536,16 @@ function Gym({ sessionKey }){
       <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
         <Dur h={h} m={m} sh={setH} sm={setM}/>
         <button onClick={() => {
-          if (!startTime) { setStartTime(Date.now()); } 
+          if (!startTime) { 
+            if (!muscle) { alert("Please select a Target muscle group first."); return; }
+            setStartTime(Date.now()); 
+          } 
           else {
-            const diffMins = Math.floor((Date.now() - startTime) / 60000);
-            setH(Math.floor(diffMins / 60));
-            setM(diffMins % 60);
+            const diffSecs = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(diffSecs / 60);
+            const secs = diffSecs % 60;
+            setH(mins >= 60 ? Math.floor(mins / 60) : 0);
+            setM(mins === 0 ? `${secs}s` : mins % 60);
             setStartTime(null);
           }
         }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
@@ -568,11 +593,16 @@ function Skills({ sessionKey }){
       <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
         <Dur h={h} m={m} sh={setH} sm={setM}/>
         <button onClick={() => {
-          if (!startTime) { setStartTime(Date.now()); } 
+          if (!startTime) { 
+            if (!sub) { alert("Please select a Subject first."); return; }
+            setStartTime(Date.now()); 
+          } 
           else {
-            const diffMins = Math.floor((Date.now() - startTime) / 60000);
-            setH(Math.floor(diffMins / 60));
-            setM(diffMins % 60);
+            const diffSecs = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(diffSecs / 60);
+            const secs = diffSecs % 60;
+            setH(mins >= 60 ? Math.floor(mins / 60) : 0);
+            setM(mins === 0 ? `${secs}s` : mins % 60);
             setStartTime(null);
           }
         }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
@@ -744,13 +774,20 @@ function CustomTabLogger({ tab, sessionKey }) {
 
   const categories = (tab.tags || "General").split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
 
-  function add(overrideMins = null) {
+  function add(elapsedSeconds = null) {
     if (!text.trim() || !cat) {
-      alert("Fill entry and category");
+      alert("Fill entry and category before saving or starting the clock.");
       return false;
     }
-    const totalMins = overrideMins !== null ? overrideMins : (h * 60 + m);
-    setEntries([...entries, { id: Date.now(), text, cat, mins: totalMins, time, date: fmtDate() }]);
+    let displayTime = "";
+    if (elapsedSeconds !== null) {
+      const mins = Math.floor(elapsedSeconds / 60);
+      const secs = elapsedSeconds % 60;
+      displayTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}s`;
+    } else {
+      displayTime = `${h * 60 + m}m`;
+    }
+    setEntries([...entries, { id: Date.now(), text, cat, mins: displayTime, time, date: fmtDate() }]);
     setText(""); setCat(null); setH(0); setM(30);
     return true;
   }
@@ -781,10 +818,16 @@ function CustomTabLogger({ tab, sessionKey }) {
         <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
           <Dur h={h} m={m} sh={setH} sm={setM} />
           <button onClick={() => {
-            if (!startTime) { setStartTime(Date.now()); } 
+            if (!startTime) { 
+              if (!text.trim() || !cat) {
+                alert("Please enter a description and select a category first.");
+                return;
+              }
+              setStartTime(Date.now()); 
+            } 
             else {
-              const diffMins = Math.floor((Date.now() - startTime) / 60000);
-              if(add(diffMins)) { setStartTime(null); }
+              const diffSecs = Math.floor((Date.now() - startTime) / 1000);
+              if(add(diffSecs)) { setStartTime(null); }
             }
           }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
             {startTime ? `⏹ ${elapsed}` : "Start Clock"}
@@ -798,7 +841,7 @@ function CustomTabLogger({ tab, sessionKey }) {
           <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
           <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
           <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
-          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}m</div>
+          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}</div>
         </div>
       ))}
       <AIBtn label={`${tab.label} Audit`} prompt={log} sessionKey={sessionKey} />
