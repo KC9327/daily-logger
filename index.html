@@ -29,7 +29,6 @@ h1,h2,h3{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;
 .dbtn{float:right;background:none;border:none;color:#C7C7CC;font-size:18px;cursor:pointer;}
 .ai-output{background:#F8F9FA;border:1.5px solid #5E5CE6;border-radius:16px;padding:16px;margin-top:16px;font-size:14px;line-height:1.6;white-space:pre-wrap;}
 .timer-btn{background:#1C1C1E;color:#FFF;border:none;padding:10px 16px;border-radius:14px;font-weight:700;font-family:monospace;cursor:pointer;display:flex;align-items:center;gap:6px;}
-@keyframes fadeIn{from{opacity:0;transform:scale(0.98);}to{opacity:1;transform:scale(1);}}
 </style>
 </head>
 <body>
@@ -136,8 +135,6 @@ function GenericLogger({ sectionId, title, icon, tagsStr, sessionKey }) {
     }
   };
 
-  const log = entries.map(e => `${e.cat} | ${e.mins}m | ${e.text}`).join("\n");
-
   return (
     <div>
       <div className="card">
@@ -166,9 +163,15 @@ function GenericLogger({ sectionId, title, icon, tagsStr, sessionKey }) {
           <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.mins}m</div>
         </div>
       ))}
-      <AIBtn label={`${title} Audit`} prompt={log} sessionKey={sessionKey} />
+      <AIBtn label={`${title} Audit`} prompt={entries.map(e => `${e.cat} | ${e.mins}m | ${e.text}`).join("\n")} sessionKey={sessionKey} />
     </div>
   );
+}
+
+// RESTORING SPECIFIC SECTIONS
+function Activity({ sessionKey }) {
+  const [actStr] = useSecureStorage("sys_act", "Prayer, Work, Gym, Study, Finance, Commute, Other", sessionKey);
+  return <GenericLogger sectionId="activity" title="Journal" icon="◎" tagsStr={actStr} sessionKey={sessionKey} />;
 }
 
 function Finance({ sessionKey }){
@@ -214,14 +217,11 @@ function Settings({ sessionKey }){
   const [apiKey, setApiKey] = useSecureStorage("gemini_api_key", "", sessionKey);
   const [sysCtx, setSysCtx] = useSecureStorage("sys_ctx", "Assistant for James.", sessionKey);
   const [sysAct, setSysAct] = useSecureStorage("sys_act", "Prayer, Work, Gym, Study, Finance, Other", sessionKey);
-  const [sysExp, setSysExp] = useSecureStorage("sys_exp", "Tithe, Interest, Rent, Other", sessionKey);
-  const [sysSpirit, setSysSpirit] = useSecureStorage("sys_spirit", "Bible, Prayer, Other", sessionKey);
   const [customTabs, setCustomTabs] = useLocalStorage("custom_tabs", []);
   const [draftCustom, setDraftCustom] = useState(Array.isArray(customTabs) ? customTabs : []);
-  const save = () => { setApiKey(apiKey); setSysCtx(sysCtx); setSysAct(sysAct); setSysExp(sysExp); setSysSpirit(sysSpirit); alert("Saved!"); };
   const exportData = () => { const d = {}; for(let i=0; i<localStorage.length; i++){ d[localStorage.key(i)]=localStorage.getItem(localStorage.key(i)); } const b=new Blob([JSON.stringify(d)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download="James_Backup.json"; a.click(); };
   return <div>
-    <div className="card"><h3>Configuration</h3><span className="lbl">Gemini Key</span><input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} className="inp"/><span className="lbl">Advisor</span><textarea rows={3} value={sysCtx} onChange={e=>setSysCtx(e.target.value)} className="inp"/><span className="lbl">Journal Tags</span><input value={sysAct} onChange={e=>setSysAct(e.target.value)} className="inp"/><button onClick={save} className="pbtn">Save</button></div>
+    <div className="card"><h3>Configuration</h3><span className="lbl">Gemini Key</span><input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} className="inp"/><span className="lbl">Advisor</span><textarea rows={3} value={sysCtx} onChange={e=>setSysCtx(e.target.value)} className="inp"/><span className="lbl">Journal Tags</span><input value={sysAct} onChange={e=>setSysAct(e.target.value)} className="inp"/><button onClick={()=>alert("Saved!")} className="pbtn">Save</button></div>
     <div className="card"><h3>Custom Slots</h3>{draftCustom.map((t, i) => (<div key={t.id} style={{marginBottom:12, padding:10, background:"#F2F2F7", borderRadius:12}}><div style={{display:"flex", gap:8}}><input value={t.icon} onChange={e=>{const n=[...draftCustom]; n[i].icon=e.target.value; setDraftCustom(n);}} className="inp" style={{width:50}}/><input value={t.label} onChange={e=>{const n=[...draftCustom]; n[i].label=e.target.value; setDraftCustom(n);}} className="inp"/><button onClick={()=>setDraftCustom(draftCustom.filter(x=>x.id!==t.id))} className="dbtn">×</button></div><input value={t.tags||""} onChange={e=>{const n=[...draftCustom]; n[i].tags=e.target.value; setDraftCustom(n);}} className="inp" placeholder="Tags..."/></div>))}<button onClick={()=>setDraftCustom([...draftCustom, {id:"tab_"+Date.now(), icon:"📝", label:"New Tab", tags:"Other"}])} className="pbtn" style={{background:"transparent", color:"#5E5CE6", border:"1px solid #5E5CE6"}}>+ Add Tab</button><button onClick={()=>{setCustomTabs(draftCustom); alert("Saved!");}} className="pbtn" style={{marginTop:10}}>Save Layout</button></div>
     <div className="card"><button onClick={exportData} className="pbtn">Export Backup</button><button onClick={()=>{if(window.confirm("Reset?")){localStorage.clear(); window.location.reload();}}} className="pbtn" style={{background:"#FF3B30", marginTop:10}}>Reset App</button></div>
   </div>;
@@ -247,9 +247,9 @@ function App(){
     </div>
     {showMore && <div style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 40px)",maxWidth:480,background:"#fff",borderRadius:24,padding:16,boxShadow:"0 -4px 30px rgba(0,0,0,0.12)",zIndex:800,display:"flex",flexWrap:"wrap",gap:8}}>{customTabs.map(t => <button key={t.id} onClick={()=>{setTab(t.id);setShowMore(false);}} style={{flex:"1 1 48%",padding:14,borderRadius:16,background:"#F2F2F7",border:"none"}}>{t.icon} {t.label}</button>)}</div>}
     <div className="nav">
-      {[["activity","◎","Log"],["finance","₹","Ledger"],["gym","◈","Gym"],["spiritual","✦","Spirit"]].map(([id,icon,label])=>(<button key={id} className="nb" onClick={()=>{setTab(id);setShowMore(false);}}><span style={{fontSize:22,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{icon}</span><span style={{fontSize:10,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{label}</span></button>))}
+      {[["activity","◎","Log"],["finance","₹","Ledger"],["gym","◈","Gym"],["spiritual","✦","Spirit"]].map(([id,icon,label])=>(<button key={id} className="nb" onClick={()=>{setTab(id);setShowMore(false);}}><span style={{fontSize:22,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{icon}</span><span style={{fontSize:10,color:tab===id?"#5E5CE6":"#C7C7CC"}}></span></button>))}
       <button className="nb" onClick={()=>setShowMore(!showMore)}><span style={{fontSize:22,color:showMore?"#5E5CE6":"#C7C7CC"}}>••••</span><span style={{fontSize:10,color:showMore?"#5E5CE6":"#C7C7CC"}}>More</span></button>
-      <button className="nb" onClick={()=>{setTab("settings");setShowMore(false);}}><span style={{fontSize:22,color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>⚙</span><span style={{fontSize:10,color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>Config</span></button>
+      <button className="nb" onClick={()=>{setTab("settings");setShowMore(false);}}><span style={{fontSize:22,color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>⚙</span><span style={{fontSize:10,color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}></span></button>
     </div>
   </div>;
 }
