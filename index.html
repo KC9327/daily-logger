@@ -48,6 +48,13 @@ body {
   overflow-x: hidden;
   font-variant-numeric: tabular-nums; 
   -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; /* Disables cursor/highlighting on Safari/iOS */
+  user-select: none; /* Disables cursor/highlighting globally */
+}
+
+input, textarea, .inp {
+  -webkit-user-select: auto;
+  user-select: auto; /* Re-enables cursor ONLY inside text boxes */
 }
 
 .card {
