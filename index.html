@@ -16,27 +16,26 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'Inter',-apple-system,sans-serif;background:#F2F2F7;padding-bottom:100px;color:#1C1C1E;overflow-x:hidden;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;}
-.card{background:#FFFFFF;border-radius:24px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,0.04);border:none;transition:transform 0.2s ease;}
-h1,h2,h3,h4{font-family:'Outfit',sans-serif;color:#1C1C1E;font-weight:800;letter-spacing:-0.02em;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#F2F2F7;padding-bottom:100px;color:#1C1C1E;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;}
+.card{background:#FFFFFF;border-radius:24px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,0.04);}
+h1,h2,h3{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;}
 .lbl{font-size:11px;color:#8E8E93;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;display:block;font-weight:700;}
-.inp{width:100%;padding:14px;border:none;border-radius:16px;font-size:16px;font-family:'Inter',sans-serif;color:#1C1C1E;background:#F2F2F7;outline:none;resize:none;margin-bottom:12px;transition:all 0.3s ease;}
-.inp:focus{background:#FFFFFF;box-shadow:0 0 0 2px #5E5CE6;}
-.pbtn{width:100%;padding:16px;color:#FFFFFF;border:none;border-radius:18px;font-size:15px;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;background:#5E5CE6;box-shadow:0 4px 12px rgba(94,92,230,0.3);transition:all 0.2s ease;}
-.tbtn{padding:10px 18px;border-radius:14px;font-size:14px;font-family:'Inter',sans-serif;border:none;background:#F2F2F7;color:#3A3A3C;margin:4px 4px 4px 0;transition:all 0.2s ease;cursor:pointer;}
-.sbtn{width:36px;height:36px;border-radius:12px;border:none;background:#F2F2F7;cursor:pointer;font-size:20px;font-family:'Outfit',sans-serif;font-weight:700;color:#5E5CE6;}
-.nav{position:fixed;bottom:20px;left:20px;right:20px;background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);border-radius:28px;display:flex;padding:12px 10px;box-shadow:0 10px 30px rgba(0,0,0,0.1);border:1px solid rgba(255,255,255,0.3);z-index:900;}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;}
+.inp{width:100%;padding:14px;border:none;border-radius:16px;font-size:16px;background:#F2F2F7;outline:none;margin-bottom:12px;}
+.pbtn{width:100%;padding:16px;color:#FFFFFF;border:none;border-radius:18px;font-size:15px;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;background:#5E5CE6;box-shadow:0 4px 12px rgba(94,92,230,0.3);}
+.tbtn{padding:10px 18px;border-radius:14px;font-size:14px;background:#F2F2F7;color:#3A3A3C;margin:4px 4px 4px 0;border:1px solid #E5E5EA;cursor:pointer;}
+.sbtn{width:36px;height:36px;border-radius:12px;border:none;background:#F2F2F7;cursor:pointer;font-size:20px;font-weight:700;color:#5E5CE6;}
+.nav{position:fixed;bottom:20px;left:20px;right:20px;background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);border-radius:28px;display:flex;padding:12px 10px;box-shadow:0 10px 30px rgba(0,0,0,0.1);z-index:900;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;}
 .dbtn{float:right;background:none;border:none;color:#C7C7CC;font-size:18px;cursor:pointer;}
-.ai-output{background:#F8F9FA;border:1.5px solid #5E5CE6;border-radius:16px;padding:16px;margin-top:16px;font-size:14px;line-height:1.6;color:#1C1C1E;white-space:pre-wrap;animation:fadeIn 0.4s ease-out;}
-.timer-banner{background:#1C1C1E;color:#FFF;padding:12px 20px;border-radius:16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;animation:fadeIn 0.3s ease;}
+.ai-output{background:#F8F9FA;border:1.5px solid #5E5CE6;border-radius:16px;padding:16px;margin-top:16px;font-size:14px;line-height:1.6;white-space:pre-wrap;}
+.timer-btn{background:#1C1C1E;color:#FFF;border:none;padding:10px 16px;border-radius:14px;font-weight:700;font-family:monospace;cursor:pointer;display:flex;align-items:center;gap:6px;}
 @keyframes fadeIn{from{opacity:0;transform:scale(0.98);}to{opacity:1;transform:scale(1);}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
-const {useState, useEffect, useRef} = React;
+const {useState, useEffect} = React;
 const fmtDate = () => new Date().toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
 
 function useSecureStorage(key, init, secretKey) {
@@ -75,146 +74,107 @@ const PALETTE=[{bg:"#EEF0FF",tx:"#5E5CE6",br:"#5E5CE6"},{bg:"#EAF3DE",tx:"#27500
 
 function Tag({label,sel,onClick,bg,tx,br}){return <button className="tbtn" onClick={onClick} style={{background:sel?(bg||"#EEF0FF"):"transparent",color:sel?(tx||"#5E5CE6"):"#8E8E93",border:sel?"1.5px solid "+(br||"#5E5CE6"):"1px solid #E5E5EA",fontWeight:sel?700:400}}>{label}</button>;}
 
-function Dur({h,m,sh,sm}){
-  return <div style={{display:"flex",gap:16,alignItems:"center"}}>
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-      <span className="lbl" style={{marginBottom:0}}>HOURS</span>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <button className="sbtn" onClick={()=>sh(Math.max(0,h-1))}>-</button>
-        <span style={{fontSize:22,fontWeight:700,minWidth:32,textAlign:"center"}}>{h}</span>
-        <button className="sbtn" onClick={()=>sh(Math.min(12,h+1))}>+</button>
-      </div>
-    </div>
-    <span style={{fontSize:24,color:"#C7C7CC",marginTop:18}}>:</span>
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-      <span className="lbl" style={{marginBottom:0}}>MINS</span>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <button className="sbtn" onClick={()=>sm(Math.max(0,m-5))}>-</button>
-        <span style={{fontSize:22,fontWeight:700,minWidth:32,textAlign:"center"}}>{m}</span>
-        <button className="sbtn" onClick={()=>sm(Math.min(55,m+5))}>+</button>
-      </div>
-    </div>
-  </div>;
-}
-
 function AIBtn({prompt, label, sessionKey}){
   const [load, setLoad] = useState(false);
   const [res, setRes] = useState("");
   const [apiKey] = useSecureStorage("gemini_api_key", "", sessionKey);
   const [identity] = useSecureStorage("sys_ctx", "", sessionKey);
   async function run(){
-    if(!apiKey) return alert("Enter Gemini Key in Config");
+    if(!apiKey) return alert("Gemini Key Required");
     setLoad(true); setRes("");
     try{
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({contents:[{parts:[{text:`ADVISOR PERSONA:\n${identity}\n\nDATA:\n${prompt}`}]}]})
+        body:JSON.stringify({contents:[{parts:[{text:`ADVISOR:\n${identity}\n\nDATA:\n${prompt}`}]}]})
       });
       const d = await r.json();
       setRes(d.candidates[0].content.parts[0].text);
-    } catch(e) { setRes("Error connecting to AI."); }
+    } catch(e) { setRes("Connection Error."); }
     setLoad(false);
   }
-  return <div style={{marginTop: 16}}>
-    <button onClick={run} disabled={load} className="pbtn" style={{background: load ? "#C7C7CC" : "#1C1C1E", marginTop: 0}}>{load ? "Strategizing..." : "✦ " + label}</button>
-    {res && <div className="ai-output">{res}</div>}
-  </div>;
+  return <div style={{marginTop: 16}}><button onClick={run} disabled={load} className="pbtn" style={{background: load ? "#C7C7CC" : "#1C1C1E", marginTop:0}}>{load ? "Strategizing..." : "✦ " + label}</button>{res && <div className="ai-output">{res}</div>}</div>;
 }
 
-function Stopwatch({ onStop, sessionKey, sectionId }) {
+function GenericLogger({ sectionId, title, icon, tagsStr, sessionKey }) {
+  const [entries, setEntries] = useSecureStorage(`entries_${sectionId}`, [], sessionKey);
   const [startTime, setStartTime] = useSecureStorage(`sw_start_${sectionId}`, null, sessionKey);
+  const [text, setText] = useState("");
+  const [cat, setCat] = useState(null);
+  const [h, setH] = useState(0);
+  const [m, setM] = useState(30);
   const [elapsed, setElapsed] = useState("00:00:00");
-  
+
   useEffect(() => {
     let interval;
     if (startTime) {
       interval = setInterval(() => {
         const diff = Date.now() - startTime;
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        setElapsed(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
+        const hh = Math.floor(diff / 3600000);
+        const mm = Math.floor((diff % 3600000) / 60000);
+        const ss = Math.floor((diff % 60000) / 1000);
+        setElapsed(`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`);
       }, 1000);
-    } else {
-      setElapsed("00:00:00");
     }
     return () => clearInterval(interval);
   }, [startTime]);
 
-  const handleToggle = () => {
-    if (!startTime) {
-      setStartTime(Date.now());
-    } else {
-      const diffMins = Math.floor((Date.now() - startTime) / 60000);
-      onStop(Math.floor(diffMins / 60), diffMins % 60);
-      setStartTime(null);
-    }
-  };
-
-  return (
-    <div className="timer-banner">
-      <div>
-        <div style={{fontSize: 10, fontWeight: 700, color: "#8E8E93"}}>LIVE RECORDING</div>
-        <div style={{fontSize: 20, fontWeight: 800, fontFamily: "monospace"}}>{elapsed}</div>
-      </div>
-      <button onClick={handleToggle} style={{background: startTime ? "#FF3B30" : "#34C759", border: "none", color: "#FFF", padding: "8px 16px", borderRadius: 12, fontWeight: 700}}>
-        {startTime ? "STOP" : "START"}
-      </button>
-    </div>
-  );
-}
-
-function GenericLogger({ sectionId, title, icon, tagsStr, sessionKey }) {
-  const [entries, setEntries] = useSecureStorage(`entries_${sectionId}`, [], sessionKey);
-  const [text, setText] = useState("");
-  const [cat, setCat] = useState(null);
-  const [h, setH] = useState(0);
-  const [m, setM] = useState(30);
   const categories = (tagsStr || "").split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
 
-  function add() {
+  function saveEntry(finalMins = null) {
     if (!text.trim() || !cat) return alert("Fill entry and category");
-    setEntries([...entries, { id: Date.now(), text, cat, mins: h * 60 + m, date: fmtDate(), time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
-    setText(""); setCat(null); setH(0); setM(30);
+    const totalMins = finalMins !== null ? finalMins : (h * 60 + m);
+    setEntries([...entries, { id: Date.now(), text, cat, mins: totalMins, date: fmtDate(), time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) }]);
+    setText(""); setCat(null); setH(0); setM(30); setStartTime(null);
   }
+
+  const toggleClock = () => {
+    if (!startTime) { setStartTime(Date.now()); } 
+    else {
+      const diffMins = Math.floor((Date.now() - startTime) / 60000);
+      saveEntry(diffMins);
+    }
+  };
 
   const log = entries.map(e => `${e.cat} | ${e.mins}m | ${e.text}`).join("\n");
 
   return (
     <div>
-      <Stopwatch sectionId={sectionId} sessionKey={sessionKey} onStop={(hours, mins) => { setH(hours); setM(mins); }} />
       <div className="card">
         <h3 style={{marginBottom: 10}}>{icon} {title}</h3>
         <textarea rows={2} value={text} onChange={e => setText(e.target.value)} placeholder={`Log ${title}...`} className="inp" />
         <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
           {categories.map(c => <Tag key={c.n} label={c.n} sel={cat === c.n} onClick={() => setCat(c.n)} bg={c.bg} tx={c.tx} br={c.br} />)}
         </div>
-        <Dur h={h} m={m} sh={setH} sm={setM} />
-        <button onClick={add} className="pbtn" style={{ background: "#1C1C1E" }}>+ Save Entry</button>
+        <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between"}}>
+          <div style={{display:"flex", gap:12, alignItems:"center"}}>
+            <div style={{textAlign:"center"}}><span className="lbl" style={{marginBottom:4}}>H</span><div style={{display:"flex",alignItems:"center",gap:6}}><button className="sbtn" onClick={()=>setH(Math.max(0,h-1))}>-</button><span style={{fontWeight:700, minWidth:20}}>{h}</span><button className="sbtn" onClick={()=>setH(h+1)}>+</button></div></div>
+            <span style={{fontSize:20, color:"#C7C7CC", marginTop:14}}>:</span>
+            <div style={{textAlign:"center"}}><span className="lbl" style={{marginBottom:4}}>M</span><div style={{display:"flex",alignItems:"center",gap:6}}><button className="sbtn" onClick={()=>setM(Math.max(0,m-5))}>-</button><span style={{fontWeight:700, minWidth:20}}>{m}</span><button className="sbtn" onClick={()=>setM(m+5)}>+</button></div></div>
+          </div>
+          <button onClick={toggleClock} className="timer-btn" style={{background: startTime ? "#FF3B30" : "#1C1C1E"}}>
+            {startTime ? <span>⏹ {elapsed}</span> : "Start Clock"}
+          </button>
+        </div>
+        <button onClick={()=>saveEntry()} className="pbtn" style={{background:"#1C1C1E", opacity: startTime ? 0.3 : 1}}>+ Save Entry</button>
       </div>
       {[...entries].reverse().map(e => (
         <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
           <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
           <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
-          <div style={{ fontSize: 15, marginTop: 10 }}>{e.text}</div>
+          <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
           <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.mins}m</div>
         </div>
       ))}
-      <AIBtn label={`${title} Analysis`} prompt={log} sessionKey={sessionKey} />
+      <AIBtn label={`${title} Audit`} prompt={log} sessionKey={sessionKey} />
     </div>
   );
-}
-
-function Activity({ sessionKey }) {
-  const [actStr] = useSecureStorage("sys_act", "Prayer, Work, Gym, Study, Finance, Commute, Other", sessionKey);
-  return <GenericLogger sectionId="activity" title="Journal" icon="◎" tagsStr={actStr} sessionKey={sessionKey} />;
 }
 
 function Finance({ sessionKey }){
   const [expenses,setExpenses]=useSecureStorage("fin_exp", [], sessionKey); 
   const [invs,setInvs]=useSecureStorage("fin_inv", [], sessionKey);
-  const [expStr]=useSecureStorage("sys_exp","Tithe, Interest, Rent, Groceries, Medicine, DWCRA, Utilities, Other", sessionKey);
+  const [expStr]=useSecureStorage("sys_exp","Tithe, Interest, Rent, Groceries, DWCRA, Utilities, Other", sessionKey);
   const [invStr]=useSecureStorage("sys_inv","AI Skills, PMP, Health, Corpus, Other", sessionKey);
   const [tab,setTab]=useState("exp");
   const [ed,setEd]=useState(""); const [ea,setEa]=useState(""); const [ec,setEc]=useState(null);
@@ -234,107 +194,36 @@ function Finance({ sessionKey }){
       <button onClick={tab==="exp"?addE:addI} className="pbtn" style={{background:tab==="exp"?"#FF3B30":"#34C759"}}>+ Add</button>
     </div>
     {(tab==="exp"?expenses:invs).map(e=>(
-      <div key={e.id} className="card" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontSize:14,fontWeight:500}}>{e.d}</div><div style={{fontSize:11,color:"#8E8E93"}}>{e.c} · {e.date}</div></div>
-        <div style={{fontWeight:800,color:tab==="exp"?"#FF3B30":"#34C759"}}>₹{e.a} <button onClick={()=>tab==="exp"?setExpenses(expenses.filter(x=>x.id!==e.id)):setInvs(invs.filter(x=>x.id!==e.id))} className="dbtn">×</button></div>
-      </div>
+      <div key={e.id} className="card" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{fontSize:14}}>{e.d} <span style={{fontSize:10,color:"#8E8E93"}}>{e.c}</span></div><div style={{fontWeight:800}}>₹{e.a} <button onClick={()=>tab==="exp"?setExpenses(expenses.filter(x=>x.id!==e.id)):setInvs(invs.filter(x=>x.id!==e.id))} className="dbtn">×</button></div></div>
     ))}
   </div>;
 }
 
 function Spiritual({ sessionKey }) {
-  const [spiritStr]=useSecureStorage("sys_spirit","Bible Reading, Morning Prayer, Evening Prayer, Fasting, Other", sessionKey);
+  const [spiritStr]=useSecureStorage("sys_spirit","Bible, Morning Prayer, Evening Prayer, Other", sessionKey);
   const [types,setTypes]=useSecureStorage("sp_types", [], sessionKey);
   const [verse,setVerse]=useSecureStorage("sp_verse", "", sessionKey);
   const [godSpoke,setGodSpoke]=useSecureStorage("sp_godSpoke", "", sessionKey);
-  function toggle(t){setTypes(types.includes(t)?types.filter(x=>x!==t):[...types,t]);}
   return <div>
-    <div className="card">
-      <span className="lbl">Actions</span>
-      <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{spiritStr.split(",").map(t=><Tag key={t} label={t.trim()} sel={types.includes(t.trim())} onClick={()=>toggle(t.trim())}/>)}</div>
-      <span className="lbl">Daily Verse</span>
-      <input value={verse} onChange={e=>setVerse(e.target.value)} placeholder="Proverbs 13:11..." className="inp"/>
-      <span className="lbl">What God spoke to me</span>
-      <textarea rows={3} value={godSpoke} onChange={e=>setGodSpoke(e.target.value)} placeholder="Insights..." className="inp"/>
-    </div>
+    <div className="card"><span className="lbl">Actions</span><div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{spiritStr.split(",").map(t=><Tag key={t} label={t.trim()} sel={types.includes(t.trim())} onClick={()=>setTypes(types.includes(t.trim())?types.filter(x=>x!==t.trim()):[...types,t.trim()])}/>)}</div><span className="lbl">Verse</span><input value={verse} onChange={e=>setVerse(e.target.value)} placeholder="Proverbs..." className="inp"/><span className="lbl">Reflection</span><textarea rows={3} value={godSpoke} onChange={e=>setGodSpoke(e.target.value)} placeholder="Insights..." className="inp"/></div>
     <AIBtn label="Spiritual Counsel" prompt={`Verse: ${verse}\nNotes: ${godSpoke}`} sessionKey={sessionKey} />
   </div>;
 }
 
 function Settings({ sessionKey }){
   const [apiKey, setApiKey] = useSecureStorage("gemini_api_key", "", sessionKey);
-  const [sysCtx, setSysCtx] = useSecureStorage("sys_ctx", "You are James's Strategic Advisor.", sessionKey);
+  const [sysCtx, setSysCtx] = useSecureStorage("sys_ctx", "Assistant for James.", sessionKey);
   const [sysAct, setSysAct] = useSecureStorage("sys_act", "Prayer, Work, Gym, Study, Finance, Other", sessionKey);
   const [sysExp, setSysExp] = useSecureStorage("sys_exp", "Tithe, Interest, Rent, Other", sessionKey);
   const [sysSpirit, setSysSpirit] = useSecureStorage("sys_spirit", "Bible, Prayer, Other", sessionKey);
-  const [draftApi, setDraftApi] = useState(apiKey);
-  const [draftCtx, setDraftCtx] = useState(sysCtx);
-  const [draftAct, setDraftAct] = useState(sysAct);
-  const [draftExp, setDraftExp] = useState(sysExp);
-  const [draftSpirit, setDraftSpirit] = useState(sysSpirit);
   const [customTabs, setCustomTabs] = useLocalStorage("custom_tabs", []);
   const [draftCustom, setDraftCustom] = useState(Array.isArray(customTabs) ? customTabs : []);
-  const save = () => { setApiKey(draftApi); setSysCtx(draftCtx); setSysAct(draftAct); setSysExp(draftExp); setSysSpirit(draftSpirit); alert("Saved!"); };
-  const saveCustom = () => { setCustomTabs(draftCustom); alert("Layout Saved!"); };
-  const exportData = () => { const d = {}; for(let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); d[k]=localStorage.getItem(k); } const b=new Blob([JSON.stringify(d)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download="James_Backup.json"; a.click(); };
+  const save = () => { setApiKey(apiKey); setSysCtx(sysCtx); setSysAct(sysAct); setSysExp(sysExp); setSysSpirit(sysSpirit); alert("Saved!"); };
+  const exportData = () => { const d = {}; for(let i=0; i<localStorage.length; i++){ d[localStorage.key(i)]=localStorage.getItem(localStorage.key(i)); } const b=new Blob([JSON.stringify(d)],{type:"application/json"}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download="James_Backup.json"; a.click(); };
   return <div>
-    <div className="card">
-      <h3>Configuration</h3>
-      <span className="lbl">Gemini Key</span>
-      <input type="password" value={draftApi} onChange={e=>setDraftApi(e.target.value)} className="inp"/>
-      <span className="lbl">Advisor Persona</span>
-      <textarea rows={4} value={draftCtx} onChange={e=>setDraftCtx(e.target.value)} className="inp"/>
-      <span className="lbl">Journal Tags</span>
-      <input value={draftAct} onChange={e=>setDraftAct(e.target.value)} className="inp"/>
-      <span className="lbl">Expense Tags</span>
-      <input value={draftExp} onChange={e=>setDraftExp(e.target.value)} className="inp"/>
-      <span className="lbl">Spirit Tags</span>
-      <input value={draftSpirit} onChange={e=>setDraftSpirit(e.target.value)} className="inp"/>
-      <button onClick={save} className="pbtn">Save Configuration</button>
-    </div>
-    <div className="card">
-      <h3>Custom Slots</h3>
-      {draftCustom.map((t, i) => (
-        <div key={t.id} style={{marginBottom:12, padding:10, background:"#F2F2F7", borderRadius:12}}>
-          <div style={{display:"flex", gap:8}}>
-            <input value={t.icon} onChange={e=>{const n=[...draftCustom]; n[i].icon=e.target.value; setDraftCustom(n);}} className="inp" style={{width:50}}/>
-            <input value={t.label} onChange={e=>{const n=[...draftCustom]; n[i].label=e.target.value; setDraftCustom(n);}} className="inp"/>
-            <button onClick={()=>setDraftCustom(draftCustom.filter(x=>x.id!==t.id))} className="dbtn">×</button>
-          </div>
-          <input value={t.tags||""} onChange={e=>{const n=[...draftCustom]; n[i].tags=e.target.value; setDraftCustom(n);}} className="inp" placeholder="Tags..."/>
-        </div>
-      ))}
-      <button onClick={()=>setDraftCustom([...draftCustom, {id:"tab_"+Date.now(), icon:"📝", label:"New Tab", tags:"Other"}])} className="pbtn" style={{background:"transparent", color:"#5E5CE6", border:"1px solid #5E5CE6", boxShadow:"none"}}>+ Add Tab</button>
-      <button onClick={saveCustom} className="pbtn" style={{marginTop:10}}>Save Layout</button>
-    </div>
-    <div className="card" style={{border: "1.5px dashed #C7C7CC"}}>
-      <h3>Archives</h3>
-      <button onClick={exportData} className="pbtn" style={{marginBottom: 10}}>Export Backup</button>
-      <button onClick={()=>{if(window.confirm("Reset?")){localStorage.clear(); window.location.reload();}}} className="pbtn" style={{background:"#FF3B30"}}>Reset App</button>
-    </div>
-  </div>;
-}
-
-function Prophecy({ sessionKey }){
-  const [timeframe, setTimeframe] = useState("1 Day");
-  const [mode, setMode] = useState("both");
-  const [actEntries] = useSecureStorage("entries_activity", [], sessionKey);
-  const dates = [...new Set(actEntries.map(e => e.date))];
-  const cats = [...new Set(actEntries.filter(e => e.date === fmtDate()).map(e => e.cat))];
-  const req = timeframe === "1 Day" ? cats.length >= 5 : timeframe === "1 Week" ? dates.length >= 5 : timeframe === "1 Month" ? dates.length >= 21 : dates.length >= 52;
-  return <div>
-    <div className="card" style={{background: "linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%)", textAlign: "center", padding: 28}}><h2 style={{color: "#F2F2F7"}}>Life Prophecy</h2></div>
-    <div className="card">
-      <span className="lbl">Timeframe</span>
-      <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20}}>
-        {["1 Day", "1 Week", "1 Month", "1 Year"].map(t => <button key={t} onClick={() => setTimeframe(t)} style={{padding: "12px 4px", borderRadius: 14, background: timeframe === t ? "#5E5CE6" : "#F2F2F7", color: timeframe === t ? "#fff" : "#3A3A3C", fontWeight: 700}}>{t}</button>)}
-      </div>
-      <span className="lbl">Mode</span>
-      <div style={{display:"flex", flexDirection:"column", gap:10, marginBottom:20}}>
-        {[{id:"current",l:"⚠️ Current Path"},{id:"heroic",l:"🦁 Heroic Path"},{id:"both",l:"🎬 Full Movie"}].map(m => <button key={m.id} onClick={()=>setMode(m.id)} style={{padding:"14px 16px", borderRadius:16, background:mode===m.id?"#EEF0FF":"#F2F2F7", textAlign:"left", fontWeight:700}}>{m.l}</button>)}
-      </div>
-      {req ? <AIBtn label="Generate Vision" prompt={`Predict ${timeframe} future.`} sessionKey={sessionKey} /> : <div style={{color:"#FF3B30", fontSize:13, textAlign:"center"}}>Milestones not met for this timeframe.</div>}
-    </div>
+    <div className="card"><h3>Configuration</h3><span className="lbl">Gemini Key</span><input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)} className="inp"/><span className="lbl">Advisor</span><textarea rows={3} value={sysCtx} onChange={e=>setSysCtx(e.target.value)} className="inp"/><span className="lbl">Journal Tags</span><input value={sysAct} onChange={e=>setSysAct(e.target.value)} className="inp"/><button onClick={save} className="pbtn">Save</button></div>
+    <div className="card"><h3>Custom Slots</h3>{draftCustom.map((t, i) => (<div key={t.id} style={{marginBottom:12, padding:10, background:"#F2F2F7", borderRadius:12}}><div style={{display:"flex", gap:8}}><input value={t.icon} onChange={e=>{const n=[...draftCustom]; n[i].icon=e.target.value; setDraftCustom(n);}} className="inp" style={{width:50}}/><input value={t.label} onChange={e=>{const n=[...draftCustom]; n[i].label=e.target.value; setDraftCustom(n);}} className="inp"/><button onClick={()=>setDraftCustom(draftCustom.filter(x=>x.id!==t.id))} className="dbtn">×</button></div><input value={t.tags||""} onChange={e=>{const n=[...draftCustom]; n[i].tags=e.target.value; setDraftCustom(n);}} className="inp" placeholder="Tags..."/></div>))}<button onClick={()=>setDraftCustom([...draftCustom, {id:"tab_"+Date.now(), icon:"📝", label:"New Tab", tags:"Other"}])} className="pbtn" style={{background:"transparent", color:"#5E5CE6", border:"1px solid #5E5CE6"}}>+ Add Tab</button><button onClick={()=>{setCustomTabs(draftCustom); alert("Saved!");}} className="pbtn" style={{marginTop:10}}>Save Layout</button></div>
+    <div className="card"><button onClick={exportData} className="pbtn">Export Backup</button><button onClick={()=>{if(window.confirm("Reset?")){localStorage.clear(); window.location.reload();}}} className="pbtn" style={{background:"#FF3B30", marginTop:10}}>Reset App</button></div>
   </div>;
 }
 
@@ -345,26 +234,20 @@ function App(){
   const [tab, setTab] = useState("activity");
   const [showMore, setShowMore] = useState(false);
   const [customTabs] = useLocalStorage("custom_tabs", []);
-  const handleUnlock = () => { if (CryptoJS.SHA256(pinAttempt.trim()).toString() === VALID_HASHES[0]) { setSessionKey(pinAttempt.trim()); sessionStorage.setItem("active_key", pinAttempt.trim()); } else { alert("Denied"); setPinAttempt(""); } };
-  if (!sessionKey) return <div style={{maxWidth:520,margin:"0 auto",height:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",padding:20}}><div className="card" style={{textAlign:"center"}}><div style={{fontSize:50}}>🛡️</div><h2>James Chronicles</h2><input type="password" value={pinAttempt} onChange={e=>setPinAttempt(e.target.value)} placeholder="PIN..." className="inp" style={{textAlign:"center",marginTop:12}}/><button onClick={handleUnlock} className="pbtn">Unlock</button></div></div>;
+  if (!sessionKey) return <div style={{maxWidth:520,margin:"0 auto",height:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",padding:20}}><div className="card" style={{textAlign:"center"}}><div style={{fontSize:50}}>🛡️</div><h2>James Chronicles</h2><input type="password" value={pinAttempt} onChange={e=>setPinAttempt(e.target.value)} placeholder="PIN..." className="inp" style={{textAlign:"center",marginTop:12}}/><button onClick={()=>{if(CryptoJS.SHA256(pinAttempt.trim()).toString()===VALID_HASHES[0]){setSessionKey(pinAttempt.trim());sessionStorage.setItem("active_key",pinAttempt.trim());}else{alert("Denied");setPinAttempt("");}}} className="pbtn">Unlock</button></div></div>;
   return <div style={{maxWidth:520,margin:"0 auto",padding:"40px 20px 100px"}}>
-    <h1 style={{fontSize:34}}>Good Day, James.</h1>
-    <div style={{marginTop:20}}>
+    <h1 style={{fontSize:34, marginBottom:20}}>James Chronicles</h1>
+    <div>
       {tab === "activity" && <Activity sessionKey={sessionKey}/>}
       {tab === "finance" && <Finance sessionKey={sessionKey}/>}
-      {tab === "gym" && <GenericLogger sectionId="gym" title="Gym" icon="◈" tagsStr={localStorage.getItem("sys_gym")||"Push,Pull,Legs,Core,Cardio,Other"} sessionKey={sessionKey}/>}
-      {tab === "skills" && <GenericLogger sectionId="skills" title="Skill" icon="◑" tagsStr={localStorage.getItem("sys_skill")||"AI,PMP,Other"} sessionKey={sessionKey}/>}
+      {tab === "gym" && <GenericLogger sectionId="gym" title="Gym" icon="◈" tagsStr={localStorage.getItem("sys_gym")||"Push,Pull,Legs,Other"} sessionKey={sessionKey}/>}
       {tab === "spiritual" && <Spiritual sessionKey={sessionKey}/>}
-      {tab === "prophecy" && <Prophecy sessionKey={sessionKey}/>}
       {tab === "settings" && <Settings sessionKey={sessionKey}/>}
       {customTabs.map(t => tab === t.id && <GenericLogger key={t.id} sectionId={t.id} title={t.label} icon={t.icon} tagsStr={t.tags} sessionKey={sessionKey}/>)}
     </div>
-    {showMore && <div style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 40px)",maxWidth:480,background:"#fff",borderRadius:24,padding:16,boxShadow:"0 -4px 30px rgba(0,0,0,0.12)",zIndex:800,display:"flex",flexWrap:"wrap",gap:8}}>
-      <button onClick={()=>{setTab("prophecy");setShowMore(false);}} style={{flex:"1 1 48%",padding:14,borderRadius:16,background:"#F2F2F7",border:"none"}}>🎬 Prophecy</button>
-      {customTabs.map(t => <button key={t.id} onClick={()=>{setTab(t.id);setShowMore(false);}} style={{flex:"1 1 48%",padding:14,borderRadius:16,background:"#F2F2F7",border:"none"}}>{t.icon} {t.label}</button>)}
-    </div>}
+    {showMore && <div style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",width:"calc(100% - 40px)",maxWidth:480,background:"#fff",borderRadius:24,padding:16,boxShadow:"0 -4px 30px rgba(0,0,0,0.12)",zIndex:800,display:"flex",flexWrap:"wrap",gap:8}}>{customTabs.map(t => <button key={t.id} onClick={()=>{setTab(t.id);setShowMore(false);}} style={{flex:"1 1 48%",padding:14,borderRadius:16,background:"#F2F2F7",border:"none"}}>{t.icon} {t.label}</button>)}</div>}
     <div className="nav">
-      {[["activity","◎","Log"],["finance","₹","Ledger"],["gym","◈","Gym"],["skills","◑","Skill"],["spiritual","✦","Spirit"]].map(([id,icon,label])=>(<button key={id} className="nb" onClick={()=>{setTab(id);setShowMore(false);}}><span style={{fontSize:22,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{icon}</span><span style={{fontSize:10,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{label}</span></button>))}
+      {[["activity","◎","Log"],["finance","₹","Ledger"],["gym","◈","Gym"],["spiritual","✦","Spirit"]].map(([id,icon,label])=>(<button key={id} className="nb" onClick={()=>{setTab(id);setShowMore(false);}}><span style={{fontSize:22,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{icon}</span><span style={{fontSize:10,color:tab===id?"#5E5CE6":"#C7C7CC"}}>{label}</span></button>))}
       <button className="nb" onClick={()=>setShowMore(!showMore)}><span style={{fontSize:22,color:showMore?"#5E5CE6":"#C7C7CC"}}>••••</span><span style={{fontSize:10,color:showMore?"#5E5CE6":"#C7C7CC"}}>More</span></button>
       <button className="nb" onClick={()=>{setTab("settings");setShowMore(false);}}><span style={{fontSize:22,color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>⚙</span><span style={{fontSize:10,color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>Config</span></button>
     </div>
