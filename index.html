@@ -187,9 +187,7 @@ h1, h2, h3, h4, .stat-value {
   animation: fadeIn 0.4s ease-out;
 }
   
-@keyframes slideIn { from{opacity:0; transform:translateX(10px);} to{opacity:1; transform:translateX(0);} }
 @keyframes fadeIn { from{opacity:0; transform:scale(0.98);} to{opacity:1; transform:scale(1);} }
-.tab-content { animation: slideIn 0.3s ease-out; }
 </style>
 </head>
 <body>
@@ -198,7 +196,7 @@ h1, h2, h3, h4, .stat-value {
 const {useState, useEffect} = React;
 const fmtDate = () => new Date().toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
 
-// --- 1. MILITARY-GRADE ENCRYPTED STORAGE ---
+// --- 1. STORAGE ENGINES ---
 function useSecureStorage(key, init, secretKey) {
   const [val, setVal] = useState(() => {
     try {
@@ -236,7 +234,6 @@ function useSecureStorage(key, init, secretKey) {
   return [val, save];
 }
 
-// --- 2. STANDARD LOCAL STORAGE ---
 function useLocalStorage(key, init) {
   const [val, setVal] = useState(() => {
     try {
@@ -293,7 +290,7 @@ function Dur({h,m,sh,sm}){
   </div>;
 }
 
-// --- 3. AI STRATEGIC ENGINE ---
+// --- 2. AI BUTTON COMPONENT ---
 function AIBtn({prompt, label, sessionKey}){
   const [load, setLoad] = useState(false);
   const [res, setRes] = useState("");
@@ -312,7 +309,7 @@ function AIBtn({prompt, label, sessionKey}){
       const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+currentKey,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ contents: [{ parts: [{ text: `STRATEGIC ADVISOR PERSONA:\n${identity}\n\nDATA TO ANALYZE:\n${prompt}` }] }] })
+        body:JSON.stringify({ contents: [{ parts: [{ text: `CONTEXT:\n${identity}\n\nDATA TO ANALYZE:\n${prompt}` }] }] })
       });
       const d = await r.json();
       if(d.error) { setRes("API Error: "+d.error.message); setApiKey(""); }
@@ -322,13 +319,13 @@ function AIBtn({prompt, label, sessionKey}){
   }
   return <div style={{marginTop: 16}}>
     <button onClick={run} disabled={load} className="pbtn" style={{background: load ? "#C7C7CC" : "#1C1C1E", marginTop: 0}}>
-      {load ? "Strategizing..." : "✦ " + label}
+      {load ? "Processing..." : "✦ " + label}
     </button>
     {res && <div className="ai-output">{res}</div>}
   </div>;
 }
 
-// --- 4. CORE COMPONENTS ---
+// --- 3. CORE LOGGER (Used by Custom Tabs) ---
 function GenericLogger({ sectionId, title, icon, tagsStr, sessionKey }) {
   const [entries, setEntries] = useSecureStorage(`entries_${sectionId}`, [], sessionKey);
   const [text, setText] = useState("");
@@ -388,11 +385,65 @@ function GenericLogger({ sectionId, title, icon, tagsStr, sessionKey }) {
   );
 }
 
+// --- 4. BUILT-IN SECTIONS ---
+function Activity({ sessionKey }) {
+  const [entries, setEntries] = useSecureStorage("entries_activity", [], sessionKey);
+  const [actStr] = useSecureStorage("sys_act", "Prayer & Bible, Gym & fitness, Deep work, Office work, Study (AI/PMP), Finance action, Family time, Meals, Commute, Distraction, Rest, Other", sessionKey);
+  const [text, setText] = useState("");
+  const [cat, setCat] = useState(null);
+  const [h, setH] = useState(0);
+  const [m, setM] = useState(30);
+  const [time, setTime] = useState(() => {
+    const n = new Date();
+    return String(n.getHours()).padStart(2, "0") + ":" + String(n.getMinutes()).padStart(2, "0");
+  });
+  const categories = actStr.split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
+  function add() {
+    if (!text.trim() || !cat) return alert("Fill entry and category");
+    setEntries([...entries, { id: Date.now(), text, cat, mins: h * 60 + m, time, date: fmtDate() }]);
+    setText(""); setCat(null); setH(0); setM(30);
+  }
+  const total = entries.reduce((s, e) => s + e.mins, 0);
+  const log = entries.map(e => `${e.time} | ${e.cat} | ${e.mins}m | ${e.text}`).join("\n");
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+        <div style={{ background: "#232528", borderRadius: 16, padding: 16, color: "#F8F7F2", textAlign: "center" }}>
+          <div style={{ fontSize: 28, fontWeight: 800 }}>{entries.length}</div>
+          <div style={{ fontSize: 11, color: "#C4BEAD", marginTop: 4 }}>ENTRIES</div>
+        </div>
+        <div style={{ background: "#232528", borderRadius: 16, padding: 16, color: "#F8F7F2", textAlign: "center" }}>
+          <div style={{ fontSize: 24, fontWeight: 800 }}>{Math.floor(total / 60)}h {total % 60}m</div>
+          <div style={{ fontSize: 11, color: "#C4BEAD", marginTop: 4 }}>TRACKED</div>
+        </div>
+      </div>
+      <div className="card">
+        <h3 style={{marginBottom: 10}}>◎ Activity Log</h3>
+        <textarea rows={2} value={text} onChange={e => setText(e.target.value)} placeholder="What did you do?" className="inp" />
+        <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
+          {categories.map(c => <Tag key={c.n} label={c.n} sel={cat === c.n} onClick={() => setCat(c.n)} bg={c.bg} tx={c.tx} br={c.br} />)}
+        </div>
+        <Dur h={h} m={m} sh={setH} sm={setM} />
+        <button onClick={add} className="pbtn" style={{ background: "#1C1C1E" }}>+ Save</button>
+      </div>
+      {[...entries].reverse().map(e => (
+        <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
+          <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
+          <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
+          <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
+          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}m</div>
+        </div>
+      ))}
+      <AIBtn label="Daily Review" prompt={`Analyze my day:\n${log}`} sessionKey={sessionKey} />
+    </div>
+  );
+}
+
 function Finance({ sessionKey }){
   const [expenses,setExpenses]=useSecureStorage("fin_exp", [], sessionKey); 
   const [invs,setInvs]=useSecureStorage("fin_inv", [], sessionKey);
   const [expStr]=useSecureStorage("sys_exp","Tithe, Interest, Rent, Groceries, Medicine, DWCRA, Utilities, Services, Other", sessionKey);
-  const [invStr]=useSecureStorage("sys_inv","Skill Growth, Health, Savings, Corpus, Other", sessionKey);
+  const [invStr]=useSecureStorage("sys_inv","Skill Growth, PMP Training, Health, Savings, Corpus, Other", sessionKey);
   const [tab,setTab]=useState("exp");
   const [ed,setEd]=useState(""); const [ea,setEa]=useState(""); const [ec,setEc]=useState(null);
   const [id,setId]=useState(""); const [ia,setIa]=useState(""); const [ic,setIc]=useState(null);
@@ -457,13 +508,13 @@ function Spiritual({ sessionKey }) {
 
 function Settings({ sessionKey }){
   const [apiKey, setApiKey] = useSecureStorage("gemini_api_key", "", sessionKey);
-  const [sysCtx, setSysCtx] = useSecureStorage("sys_ctx", "Assistant for James.", sessionKey);
-  const [sysAct, setSysAct] = useSecureStorage("sys_act", "Bible, Gym, Deep work, Admin, Other", sessionKey);
+  const [sysCtx, setSysCtx] = useSecureStorage("sys_ctx", "You are James' Strategic Advisor.", sessionKey);
+  const [sysAct, setSysAct] = useSecureStorage("sys_act", "Prayer, Gym, Work, Study, Finance, Other", sessionKey);
   const [sysExp, setSysExp] = useSecureStorage("sys_exp", "Tithe, Interest, Rent, Other", sessionKey);
   const [sysInv, setSysInv] = useSecureStorage("sys_inv", "Skills, corpus, Other", sessionKey);
-  const [sysGym, setSysGym] = useSecureStorage("sys_gym", "Push, Pull, Legs, Other", sessionKey);
+  const [sysGym, setSysGym] = useSecureStorage("sys_gym", "Push, Pull, Legs, Core, Cardio, Yoga, Rest", sessionKey);
   const [sysSkill, setSysSkill] = useSecureStorage("sys_skill", "AI, PMP, Other", sessionKey);
-  const [sysSpirit, setSysSpirit] = useSecureStorage("sys_spirit", "Bible, Prayer, Other", sessionKey);
+  const [sysSpirit, setSysSpirit] = useSecureStorage("sys_spirit", "Bible, Prayer, Fasting, Other", sessionKey);
   const [draftApi, setDraftApi] = useState(apiKey);
   const [draftCtx, setDraftCtx] = useState(sysCtx);
   const [draftAct, setDraftAct] = useState(sysAct);
@@ -491,6 +542,12 @@ function Settings({ sessionKey }){
       <input value={draftAct} onChange={e=>setDraftAct(e.target.value)} className="inp"/>
       <span className="lbl">Expense Tags</span>
       <input value={draftExp} onChange={e=>setDraftExp(e.target.value)} className="inp"/>
+      <span className="lbl">Investment Tags</span>
+      <input value={draftInv} onChange={e=>setDraftInv(e.target.value)} className="inp"/>
+      <span className="lbl">Gym Tags</span>
+      <input value={draftGym} onChange={e=>setDraftGym(e.target.value)} className="inp"/>
+      <span className="lbl">Skill Tags</span>
+      <input value={draftSkill} onChange={e=>setDraftSkill(e.target.value)} className="inp"/>
       <span className="lbl">Spirit Tags</span>
       <input value={draftSpirit} onChange={e=>setDraftSpirit(e.target.value)} className="inp"/>
       <button onClick={save} className="pbtn">Save Configuration</button>
@@ -550,7 +607,7 @@ function Prophecy({ sessionKey }){
 }
 
 function App(){
-  const VALID_HASHES = ["06010538dc6f364bd7d2a9a1f707d97a2894bb00216482d75effffa6c2a1570e"]; // for KRISHNA-270493
+  const VALID_HASHES = ["06010538dc6f364bd7d2a9a1f707d97a2894bb00216482d75effffa6c2a1570e"]; //For KRISHNA-270493
   const [sessionKey, setSessionKey] = useState(sessionStorage.getItem("active_key") || null);
   const [pinAttempt, setPinAttempt] = useState("");
   const [tab, setTab] = useState("activity");
