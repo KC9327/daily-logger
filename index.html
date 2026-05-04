@@ -241,6 +241,15 @@ function useLocalStorage(key, init) {
       return x !== null ? JSON.parse(x) : init;
     } catch(e) { return init; }
   });
+
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.detail && e.detail.key === key) setVal(e.detail.val);
+    };
+    window.addEventListener("local-storage-sync", handleStorage);
+    return () => window.removeEventListener("local-storage-sync", handleStorage);
+  }, [key]);
+
   const save = (v) => {
     setVal(v);
     try { window.localStorage.setItem(key, JSON.stringify(v)); } catch(e) {}
@@ -249,7 +258,7 @@ function useLocalStorage(key, init) {
   return [val, save];
 }
 
-// --- STOPWATCH HOOK (For manual injection) ---
+// --- STOPWATCH HOOK ---
 function useStopwatch(sectionId, sessionKey) {
   const [startTime, setStartTime] = useSecureStorage(`sw_start_${sectionId}`, null, sessionKey);
   const [elapsed, setElapsed] = useState("00:00:00");
@@ -354,7 +363,7 @@ function Activity({ sessionKey }) {
 
   function add(overrideMins = null) {
     if (!text.trim() || !cat) {
-      alert("Fill entry and category before saving");
+      alert("Fill entry and category");
       return false;
     }
     const totalMins = overrideMins !== null ? overrideMins : (h * 60 + m);
@@ -460,6 +469,7 @@ function Gym({ sessionKey }){
   const [h,setH]=useSecureStorage("gym_h", 0, sessionKey); 
   const [m,setM]=useSecureStorage("gym_m", 45, sessionKey);
   const [en,setEn]=useState(""); const [es,setEs]=useState(""); const [er,setEr]=useState(""); const [ew,setEw]=useState("");
+  
   const { startTime, setStartTime, elapsed } = useStopwatch("gym", sessionKey);
 
   function addEx(){if(!en.trim())return;setExs([...exs,{id:Date.now(),n:en,s:es,r:er,w:ew,date:fmtDate()}]);setEn("");setEs("");setEr("");setEw("");}
@@ -510,6 +520,7 @@ function Skills({ sessionKey }){
   const [learned,setLearned]=useSecureStorage("sk_learned", "", sessionKey);
   const [h,setH]=useSecureStorage("sk_h", 0, sessionKey); 
   const [m,setM]=useSecureStorage("sk_m", 50, sessionKey);
+  
   const { startTime, setStartTime, elapsed } = useStopwatch("skills", sessionKey);
 
   return <div className="card">
@@ -661,7 +672,7 @@ function Prophecy({ sessionKey }){
   </div>;
 }
 
-// --- Custom Tab Logger (Replicates Activity UI for custom slots) ---
+// --- Custom Tab Logger ---
 function CustomTabLogger({ tab, sessionKey }) {
   const [entries, setEntries] = useSecureStorage(`entries_${tab.id}`, [], sessionKey);
   const [text, setText] = useState("");
@@ -672,6 +683,7 @@ function CustomTabLogger({ tab, sessionKey }) {
     const n = new Date();
     return String(n.getHours()).padStart(2, "0") + ":" + String(n.getMinutes()).padStart(2, "0");
   });
+  
   const { startTime, setStartTime, elapsed } = useStopwatch(tab.id, sessionKey);
 
   const categories = (tab.tags || "General").split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
@@ -707,6 +719,7 @@ function CustomTabLogger({ tab, sessionKey }) {
         <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 12 }}>
           {categories.map(c => <Tag key={c.n} label={c.n} sel={cat === c.n} onClick={() => setCat(c.n)} bg={c.bg} tx={c.tx} br={c.br} />)}
         </div>
+        
         <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
           <Dur h={h} m={m} sh={setH} sm={setM} />
           <button onClick={() => {
@@ -719,6 +732,7 @@ function CustomTabLogger({ tab, sessionKey }) {
             {startTime ? `⏹ ${elapsed}` : "Start Clock"}
           </button>
         </div>
+
         <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save</button>
       </div>
       {[...entries].reverse().map(e => (
