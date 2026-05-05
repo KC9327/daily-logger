@@ -524,8 +524,18 @@ function Gym({ sessionKey }){
   
   const { startTime, setStartTime, elapsed } = useStopwatch("gym", sessionKey);
 
-  function addEx(){if(!en.trim())return;setExs([...exs,{id:Date.now(),n:en,s:es,r:er,w:ew,date:fmtDate()}]);setEn("");setEs("");setEr("");setEw("");}
-  const log = `Target: ${muscle}\nExercises:\n${exs.map(e=>"- "+e.n+": "+e.s+"x"+e.r+" @ "+e.w+"kg").join("\n")}`;
+  // Updated to accept exact time from stopwatch, or fallback to manual time
+  function addEx(exactTime = null){
+    if(!muscle) return alert("Please select a Target muscle group.");
+    if(!en.trim()) return alert("Please enter an Exercise Name.");
+    
+    const timeToLog = exactTime !== null ? exactTime : (h > 0 ? `${h}h ${m}m` : `${m}m`);
+    
+    setExs([...exs,{id:Date.now(), target: muscle, n:en, s:es, r:er, w:ew, time: timeToLog, date:fmtDate()}]);
+    setEn("");setEs("");setEr("");setEw("");
+  }
+  
+  const log = `Target: ${muscle}\nExercises:\n${exs.map(e=>"- "+e.n+": "+e.s+"x"+e.r+" @ "+e.w+"kg ("+e.time+")").join("\n")}`;
 
   return <div>
     <div className="card">
@@ -537,15 +547,25 @@ function Gym({ sessionKey }){
         <Dur h={h} m={m} sh={setH} sm={setM}/>
         <button onClick={() => {
           if (!startTime) { 
-            if (!muscle) { alert("Please select a Target muscle group first."); return; }
+            // VALIDATION: Require Target and Exercise Name before starting
+            if (!muscle || !en.trim()) { 
+              alert("Please select a Target and enter the Exercise Name below before starting the clock."); 
+              return; 
+            }
             setStartTime(Date.now()); 
           } 
           else {
+            // STOP & AUTO-SAVE: Calculate exact seconds and instantly add to list
             const diffSecs = Math.floor((Date.now() - startTime) / 1000);
-            const mins = Math.floor(diffSecs / 60);
-            const secs = diffSecs % 60;
-            setH(mins >= 60 ? Math.floor(mins / 60) : 0);
-            setM(mins === 0 ? `${secs}s` : mins % 60);
+            let timeString = "";
+            if (diffSecs < 60) {
+              timeString = `${diffSecs}s`;
+            } else {
+              const mins = Math.floor(diffSecs / 60);
+              const secs = diffSecs % 60;
+              timeString = `${mins}m ${secs}s`;
+            }
+            addEx(timeString);
             setStartTime(null);
           }
         }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
@@ -556,16 +576,16 @@ function Gym({ sessionKey }){
     </div>
     <div className="card">
       <span className="lbl">Exercise</span>
-      <input value={en} onChange={e=>setEn(e.target.value)} placeholder="Name..." className="inp"/>
+      <input value={en} onChange={e=>setEn(e.target.value)} placeholder="Name (e.g. Bench Press)..." className="inp"/>
       <div style={{display:"flex",gap:8}}>
         <input value={es} onChange={e=>setEs(e.target.value)} placeholder="Sets" className="inp"/>
         <input value={er} onChange={e=>setEr(e.target.value)} placeholder="Reps" className="inp"/>
         <input value={ew} onChange={e=>setEw(e.target.value)} placeholder="kg" className="inp"/>
       </div>
-      <button onClick={addEx} className="pbtn" style={{background:"#34C759"}}>+ Add</button>
+      <button onClick={() => addEx(null)} className="pbtn" style={{background:"#34C759", opacity: startTime ? 0.3 : 1}}>+ Add Manually</button>
       {exs.map(e=>(
         <div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F2F2F7"}}>
-          <div><div style={{fontSize:14,fontWeight:500}}>{e.n}</div><div style={{fontSize:11,color:"#8E8E93"}}>{e.date}</div></div>
+          <div><div style={{fontSize:14,fontWeight:500}}>{e.n}</div><div style={{fontSize:11,color:"#8E8E93"}}>{e.date} · {e.target} · ⌚ {e.time}</div></div>
           <div style={{fontWeight:700, color:"#34C759"}}>{e.s}x{e.r} @ {e.w}kg <button onClick={()=>setExs(exs.filter(x=>x.id!==e.id))} className="dbtn">×</button></div>
         </div>
       ))}
