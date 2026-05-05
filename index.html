@@ -450,7 +450,7 @@ function Activity({ sessionKey }) {
           </button>
         </div>
 
-        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save</button>
+        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>Save</button>
       </div>
       {[...entries].reverse().map(e => (
         <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
@@ -502,7 +502,7 @@ function Finance({ sessionKey }){
       <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{(tab==="exp"?expStr:invStr).split(",").map(c=><Tag key={c} label={c.trim()} sel={(tab==="exp"?ec:ic)===c.trim()} onClick={()=>(tab==="exp"?setEc(c.trim()):setIc(c.trim()))}/>)}</div>
       <input value={tab==="exp"?ed:id} onChange={e=>tab==="exp"?setEd(e.target.value):setId(e.target.value)} placeholder="Description..." className="inp"/>
       <input type="number" value={tab==="exp"?ea:ia} onChange={e=>tab==="exp"?setEa(e.target.value):setIa(e.target.value)} placeholder="Amount..." className="inp"/>
-      <button onClick={tab==="exp"?addE:addI} className="pbtn" style={{background:tab==="exp"?"#FF3B30":"#34C759"}}>+ Add</button>
+      <button onClick={tab==="exp"?addE:addI} className="pbtn" style={{background:tab==="exp"?"#FF3B30":"#34C759"}}>Add</button>
     </div>
     {(tab==="exp"?expenses:invs).map(e=>(
       <div key={e.id} className="card" style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
@@ -582,7 +582,7 @@ function Gym({ sessionKey }){
         <input value={er} onChange={e=>setEr(e.target.value)} placeholder="Reps" className="inp"/>
         <input value={ew} onChange={e=>setEw(e.target.value)} placeholder="kg" className="inp"/>
       </div>
-      <button onClick={() => addEx(null)} className="pbtn" style={{background:"#34C759", opacity: startTime ? 0.3 : 1}}>+ Add Manually</button>
+      <button onClick={() => addEx(null)} className="pbtn" style={{background:"#34C759", opacity: startTime ? 0.3 : 1}}>Add</button>
       {exs.map(e=>(
         <div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F2F2F7"}}>
           <div><div style={{fontSize:14,fontWeight:500}}>{e.n}</div><div style={{fontSize:11,color:"#8E8E93"}}>{e.date} · {e.target} · ⌚ {e.time}</div></div>
@@ -725,7 +725,7 @@ function Settings({ sessionKey }){
           <input value={t.tags||""} onChange={e=>{const n=[...draftCustom]; n[i].tags=e.target.value; setDraftCustom(n);}} className="inp" placeholder="Tags (comma separated)..."/>
         </div>
       ))}
-      <button onClick={()=>setDraftCustom([...draftCustom, {id:"tab_"+Date.now(), icon:"📝", label:"New Tab", tags:"General"}])} className="pbtn" style={{background:"transparent", color:"#5E5CE6", border:"1px solid #5E5CE6", boxShadow:"none"}}>+ Add Tab</button>
+      <button onClick={()=>setDraftCustom([...draftCustom, {id:"tab_"+Date.now(), icon:"📝", label:"New Tab", tags:"General"}])} className="pbtn" style={{background:"transparent", color:"#5E5CE6", border:"1px solid #5E5CE6", boxShadow:"none"}}>Add Tab</button>
       <button onClick={saveCustom} className="pbtn" style={{marginTop:10}}>Save Layout</button>
     </div>
 
@@ -866,7 +866,7 @@ function CustomTabLogger({ tab, sessionKey }) {
           </button>
         </div>
 
-        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save</button>
+        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>Save</button>
       </div>
       {[...entries].reverse().map(e => (
         <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
