@@ -610,19 +610,31 @@ function Skills({ sessionKey }){
       <span className="lbl">Subject</span>
       <div style={{display:"flex",gap:8,marginBottom:12}}>{skillStr.split(",").map(s=><Tag key={s} label={s.trim()} sel={sub===s.trim()} onClick={()=>setSub(s.trim())}/>)}</div>
       
-      <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
+<div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
         <Dur h={h} m={m} sh={setH} sm={setM}/>
         <button onClick={() => {
           if (!startTime) { 
-            if (!sub) { alert("Please select a Subject first."); return; }
+            // 1. VALIDATION: Require Subject and Insights before starting
+            if (!sub || !learned.trim()) { 
+              alert("Please select a Subject and type what you are studying in the Insights box before starting the clock."); 
+              return; 
+            }
             setStartTime(Date.now()); 
           } 
           else {
+            // 2. STOP & LOG: Calculate exact seconds and bypass the manual selectors entirely
             const diffSecs = Math.floor((Date.now() - startTime) / 1000);
-            const mins = Math.floor(diffSecs / 60);
-            const secs = diffSecs % 60;
-            setH(mins >= 60 ? Math.floor(mins / 60) : 0);
-            setM(mins === 0 ? `${secs}s` : mins % 60);
+            let timeString = "";
+            if (diffSecs < 60) {
+              timeString = `${diffSecs}s`;
+            } else {
+              const mins = Math.floor(diffSecs / 60);
+              const secs = diffSecs % 60;
+              timeString = `${mins}m ${secs}s`;
+            }
+            
+            // 3. REGISTER ENTRY: Append exact time directly to the Insights notepad
+            setLearned(prev => prev + (prev.endsWith("\n") ? "" : "\n") + `[Tracked Session: ${timeString}]\n`);
             setStartTime(null);
           }
         }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
