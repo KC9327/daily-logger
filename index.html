@@ -1033,18 +1033,19 @@ function App(){
       {customTabs.map(t => tab === t.id && <CustomTabLogger key={t.id} tab={t} sessionKey={sessionKey}/>)}
     </div>
 
-    {showMore && (
+   {showMore && (
       <div style={{position:"fixed", bottom:90, left:"50%", transform:"translateX(-50%)", width:"calc(100% - 40px)", maxWidth:480, background:"#fff", borderRadius:24, padding:16, boxShadow:"0 -4px 30px rgba(0,0,0,0.12)", zIndex:800, display:"flex", flexWrap:"wrap", gap:8}}>
-        {customTabs.map(t => <button key={t.id} onClick={()=>{setTab(t.id); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>{t.icon} {t.label}</button>)}
-        <button onClick={()=>{setTab("prophecy"); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>🎬 Future</button>
+        <button onClick={()=>{setTab("finance"); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>₹ Ledger</button>
+        <button onClick={()=>{setTab("gym"); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>◈ Gym</button>
+        <button onClick={()=>{setTab("skills"); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>◑ Skill</button>
         <button onClick={()=>{setTab("spiritual"); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>✦ Spirit</button>
+        <button onClick={()=>{setTab("prophecy"); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>🎬 Future</button>
+        {customTabs.map(t => <button key={t.id} onClick={()=>{setTab(t.id); setShowMore(false);}} style={{flex:"1 1 48%", padding:"14px 8px", borderRadius:16, background:"#F2F2F7", border:"none", fontWeight:700}}>{t.icon} {t.label}</button>)}
       </div>
     )}
 
     <div className="nav">
-      {[["activity","◎","Log"],["finance","₹","Ledger"],["gym","◈","Gym"],["skills","◑","Skill"]].map(([id,icon,label])=>(
-        <button key={id} className="nb" onClick={()=>{setTab(id); setShowMore(false);}}><span style={{fontSize:22, color:tab===id?"#5E5CE6":"#C7C7CC"}}>{icon}</span><span style={{fontSize:10, color:tab===id?"#5E5CE6":"#C7C7CC"}}>{label}</span></button>
-      ))}
+      <button className="nb" onClick={()=>{setTab("activity"); setShowMore(false);}}><span style={{fontSize:22, color:tab==="activity"?"#5E5CE6":"#C7C7CC"}}>◎</span><span style={{fontSize:10, color:tab==="activity"?"#5E5CE6":"#C7C7CC"}}>Log</span></button>
       <button className="nb" onClick={()=>setShowMore(!showMore)}><span style={{fontSize:22, color:showMore?"#5E5CE6":"#C7C7CC"}}>••••</span><span style={{fontSize:10, color:showMore?"#5E5CE6":"#C7C7CC"}}>More</span></button>
       <button className="nb" onClick={()=>{setTab("settings"); setShowMore(false);}}><span style={{fontSize:22, color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>⚙</span><span style={{fontSize:10, color:tab==="settings"?"#5E5CE6":"#C7C7CC"}}>Config</span></button>
     </div>
