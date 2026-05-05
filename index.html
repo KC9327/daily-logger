@@ -383,44 +383,41 @@ function Activity({ sessionKey }) {
 
   const categories = actStr.split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
 
-  function add(elapsedSeconds = null) {
+  function add(overrideMins = null) {
     if (!text.trim() || !cat) {
-      alert("Fill entry and category before saving or starting the clock.");
+      alert("Fill entry and category");
       return false;
     }
-    
-    let displayTime = "";
-    if (elapsedSeconds !== null) {
-      // Format as MM:SS if stopwatch was used
-      const mins = Math.floor(elapsedSeconds / 60);
-      const secs = elapsedSeconds % 60;
-      displayTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}s`;
-    } else {
-      // Standard format if manual input was used
-      displayTime = `${h * 60 + m}m`;
-    }
-
-    // We store the display string in the 'mins' property to avoid changing the schema
-    setEntries([...entries, { id: Date.now(), text, cat, mins: displayTime, time, date: fmtDate() }]);
+    const totalMins = overrideMins !== null ? overrideMins : (h * 60 + m);
+    setEntries([...entries, { id: Date.now(), text, cat, mins: totalMins, time, date: fmtDate() }]);
     setText(""); setCat(null); setH(0); setM(30);
     return true;
   }
 
-  const total = entries.reduce((s, e) => s + e.mins, 0);
-  const log = entries.map(e => `${e.time} | ${e.cat} | ${e.mins}m | ${e.text}`).join("\n");
+  // Helper to safely convert text times (like "45s" or "1m 10s") into pure minutes for the daily total
+  const parseTime = (val) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const s = String(val);
+    let t = 0;
+    if (s.includes('h')) { const m = s.match(/(\d+)h/); if(m) t += parseInt(m[1])*60; }
+    if (s.includes('m')) { const m = s.match(/(\d+)m/); if(m) t += parseInt(m[1]); }
+    if (s.includes('s') && !s.includes('m') && !s.includes('h')) t += 1; // Pure seconds round up to 1m for daily summary
+    if (!s.includes('h') && !s.includes('m') && !s.includes('s')) t += parseInt(s) || 0; 
+    return t;
+  };
+
+  const dailyTotals = entries.reduce((acc, e) => {
+     if(!acc[e.date]) acc[e.date] = { count: 0, mins: 0 };
+     acc[e.date].count += 1;
+     acc[e.date].mins += parseTime(e.mins || e.time);
+     return acc;
+  }, {});
+
+  const log = entries.map(e => `${e.time} | ${e.cat} | ${e.mins} | ${e.text}`).join("\n");
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
-        <div style={{ background: "#232528", borderRadius: 16, padding: 16, color: "#F8F7F2", textAlign: "center" }}>
-          <div style={{ fontSize: 28, fontWeight: 800 }}>{entries.length}</div>
-          <div style={{ fontSize: 11, color: "#C4BEAD", marginTop: 4 }}>ENTRIES</div>
-        </div>
-        <div style={{ background: "#232528", borderRadius: 16, padding: 16, color: "#F8F7F2", textAlign: "center" }}>
-          <div style={{ fontSize: 24, fontWeight: 800 }}>{Math.floor(total / 60)}h {total % 60}m</div>
-          <div style={{ fontSize: 11, color: "#C4BEAD", marginTop: 4 }}>TRACKED</div>
-        </div>
-      </div>
       <div className="card">
         <h3 style={{marginBottom: 10}}>◎ Activity Log</h3>
         <CurrentTime />
@@ -450,16 +447,31 @@ function Activity({ sessionKey }) {
           </button>
         </div>
 
-        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>Save</button>
+        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save</button>
       </div>
-      {[...entries].reverse().map(e => (
-        <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
-          <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
-          <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
-          <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
-          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}</div>
-        </div>
-      ))}
+      {[...entries].reverse().map((e, i, arr) => {
+        // Only show the header if it's the first item, or if the date changes from the previous card
+        const showHeader = i === 0 || arr[i - 1].date !== e.date;
+        const dayStats = dailyTotals[e.date];
+        const dh = Math.floor(dayStats.mins / 60);
+        const dm = dayStats.mins % 60;
+        
+        return (
+          <div key={e.id}>
+            {showHeader && (
+              <div style={{fontSize: 11, color: "#8E8E93", fontWeight: 800, margin: "24px 0 8px 4px", textTransform: "uppercase", letterSpacing: 0.5}}>
+                {e.date} &nbsp;·&nbsp; {dayStats.count} ENTRIES &nbsp;·&nbsp; ⏱ {dh > 0 ? `${dh}h ` : ""}{dm}m
+              </div>
+            )}
+            <div className="card" style={{ borderLeft: "4px solid #5E5CE6", marginBottom: 12 }}>
+              <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
+              <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
+              <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
+              <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.time} · {e.mins}</div>
+            </div>
+          </div>
+        );
+      })}
       <AIBtn label="Daily Review" prompt={`Analyze my day:\n${log}`} sessionKey={sessionKey} />
     </div>
   );
@@ -605,15 +617,27 @@ function Skills({ sessionKey }){
   const { startTime, setStartTime, elapsed } = useStopwatch("skills", sessionKey);
 
   function add(exactTime = null) {
-    if (!sub || !learned.trim()) {
-      alert("Please select a Subject and type your Insights first.");
-      return false;
-    }
-    const timeToLog = exactTime !== null ? exactTime : (h > 0 ? `${h}h ${m}m` : `${m}m`);
-    setEntries([...entries, { id: Date.now(), sub, text: learned, time: timeToLog, date: fmtDate() }]);
-    setSub(null); setLearned(""); setH(0); setM(30);
-    return true;
+    // ... (leave add unchanged) ...
   }
+
+  const parseTime = (val) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const s = String(val);
+    let t = 0;
+    if (s.includes('h')) { const m = s.match(/(\d+)h/); if(m) t += parseInt(m[1])*60; }
+    if (s.includes('m')) { const m = s.match(/(\d+)m/); if(m) t += parseInt(m[1]); }
+    if (s.includes('s') && !s.includes('m') && !s.includes('h')) t += 1;
+    if (!s.includes('h') && !s.includes('m') && !s.includes('s')) t += parseInt(s) || 0; 
+    return t;
+  };
+
+  const dailyTotals = entries.reduce((acc, e) => {
+     if(!acc[e.date]) acc[e.date] = { count: 0, mins: 0 };
+     acc[e.date].count += 1;
+     acc[e.date].mins += parseTime(e.time);
+     return acc;
+  }, {});
 
   const log = entries.map(e => `${e.date} | ${e.sub} | ${e.time} | ${e.text}`).join("\n");
 
@@ -656,15 +680,29 @@ function Skills({ sessionKey }){
       <button onClick={() => add(null)} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save Entry</button>
     </div>
 
-    {entries.slice().reverse().map(e => (
-      <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
-        <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
-        <span style={{ fontSize: 11, fontWeight: 700 }}>{e.sub}</span>
-        <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
-        <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · ⌚ {e.time}</div>
-      </div>
-    ))}
-
+    {entries.slice().reverse().map((e, i, arr) => {
+      const showHeader = i === 0 || arr[i - 1].date !== e.date;
+      const dayStats = dailyTotals[e.date];
+      const dh = Math.floor(dayStats.mins / 60);
+      const dm = dayStats.mins % 60;
+      
+      return (
+        <div key={e.id}>
+          {showHeader && (
+            <div style={{fontSize: 11, color: "#8E8E93", fontWeight: 800, margin: "24px 0 8px 4px", textTransform: "uppercase", letterSpacing: 0.5}}>
+              {e.date} &nbsp;·&nbsp; {dayStats.count} ENTRIES &nbsp;·&nbsp; ⏱ {dh > 0 ? `${dh}h ` : ""}{dm}m
+            </div>
+          )}
+          <div className="card" style={{ borderLeft: "4px solid #5E5CE6", marginBottom: 12 }}>
+            <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
+            <span style={{ fontSize: 11, fontWeight: 700 }}>{e.sub}</span>
+            <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
+            <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>⌚ {e.time}</div>
+          </div>
+        </div>
+      );
+    })}
+    
     <AIBtn label="Skill Progress Review" prompt={log} sessionKey={sessionKey} />
   </div>;
 }
@@ -825,39 +863,41 @@ function CustomTabLogger({ tab, sessionKey }) {
 
   const categories = (tab.tags || "General").split(",").map((t, i) => ({ n: t.trim(), ...PALETTE[i % PALETTE.length] })).filter(x => x.n);
 
-  function add(elapsedSeconds = null) {
+  function add(overrideMins = null) {
     if (!text.trim() || !cat) {
-      alert("Fill entry and category before saving or starting the clock.");
+      alert("Fill entry and category");
       return false;
     }
-    let displayTime = "";
-    if (elapsedSeconds !== null) {
-      const mins = Math.floor(elapsedSeconds / 60);
-      const secs = elapsedSeconds % 60;
-      displayTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}s`;
-    } else {
-      displayTime = `${h * 60 + m}m`;
-    }
-    setEntries([...entries, { id: Date.now(), text, cat, mins: displayTime, time, date: fmtDate() }]);
+    const totalMins = overrideMins !== null ? overrideMins : (h * 60 + m);
+    setEntries([...entries, { id: Date.now(), text, cat, mins: totalMins, time, date: fmtDate() }]);
     setText(""); setCat(null); setH(0); setM(30);
     return true;
   }
 
-  const total = entries.reduce((s, e) => s + e.mins, 0);
-  const log = entries.map(e => `${e.time} | ${e.cat} | ${e.mins}m | ${e.text}`).join("\n");
+  // Helper to safely convert text times (like "45s" or "1m 10s") into pure minutes for the daily total
+  const parseTime = (val) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const s = String(val);
+    let t = 0;
+    if (s.includes('h')) { const m = s.match(/(\d+)h/); if(m) t += parseInt(m[1])*60; }
+    if (s.includes('m')) { const m = s.match(/(\d+)m/); if(m) t += parseInt(m[1]); }
+    if (s.includes('s') && !s.includes('m') && !s.includes('h')) t += 1; // Pure seconds round up to 1m for daily summary
+    if (!s.includes('h') && !s.includes('m') && !s.includes('s')) t += parseInt(s) || 0; 
+    return t;
+  };
+
+  const dailyTotals = entries.reduce((acc, e) => {
+     if(!acc[e.date]) acc[e.date] = { count: 0, mins: 0 };
+     acc[e.date].count += 1;
+     acc[e.date].mins += parseTime(e.mins || e.time);
+     return acc;
+  }, {});
+
+  const log = entries.map(e => `${e.time} | ${e.cat} | ${e.mins} | ${e.text}`).join("\n");
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
-        <div style={{ background: "#232528", borderRadius: 16, padding: 16, color: "#F8F7F2", textAlign: "center" }}>
-          <div style={{ fontSize: 28, fontWeight: 800 }}>{entries.length}</div>
-          <div style={{ fontSize: 11, color: "#C4BEAD", marginTop: 4 }}>ENTRIES</div>
-        </div>
-        <div style={{ background: "#232528", borderRadius: 16, padding: 16, color: "#F8F7F2", textAlign: "center" }}>
-          <div style={{ fontSize: 24, fontWeight: 800 }}>{Math.floor(total / 60)}h {total % 60}m</div>
-          <div style={{ fontSize: 11, color: "#C4BEAD", marginTop: 4 }}>TRACKED</div>
-        </div>
-      </div>
       <div className="card">
         <h3 style={{marginBottom: 10}}>{tab.icon} {tab.label}</h3>
         <CurrentTime />
@@ -885,17 +925,32 @@ function CustomTabLogger({ tab, sessionKey }) {
           </button>
         </div>
 
-        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>Save</button>
+        <button onClick={()=>add()} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save</button>
       </div>
-      {[...entries].reverse().map(e => (
-        <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
-          <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
-          <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
-          <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
-          <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · {e.time} · {e.mins}</div>
-        </div>
-      ))}
-      <AIBtn label={`${tab.label} Audit`} prompt={log} sessionKey={sessionKey} />
+      {[...entries].reverse().map((e, i, arr) => {
+        // Only show the header if it's the first item, or if the date changes from the previous card
+        const showHeader = i === 0 || arr[i - 1].date !== e.date;
+        const dayStats = dailyTotals[e.date];
+        const dh = Math.floor(dayStats.mins / 60);
+        const dm = dayStats.mins % 60;
+        
+        return (
+          <div key={e.id}>
+            {showHeader && (
+              <div style={{fontSize: 11, color: "#8E8E93", fontWeight: 800, margin: "24px 0 8px 4px", textTransform: "uppercase", letterSpacing: 0.5}}>
+                {e.date} &nbsp;·&nbsp; {dayStats.count} ENTRIES &nbsp;·&nbsp; ⏱ {dh > 0 ? `${dh}h ` : ""}{dm}m
+              </div>
+            )}
+            <div className="card" style={{ borderLeft: "4px solid #5E5CE6", marginBottom: 12 }}>
+              <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
+              <span style={{ fontSize: 11, fontWeight: 700 }}>{e.cat}</span>
+              <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
+              <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.time} · {e.mins}</div>
+            </div>
+          </div>
+        );
+      })}
+      <AIBtn label="Daily Review" prompt={`Analyze my day:\n${log}`} sessionKey={sessionKey} />
     </div>
   );
 }
