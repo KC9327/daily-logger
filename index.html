@@ -595,14 +595,27 @@ function Gym({ sessionKey }){
 }
 
 function Skills({ sessionKey }){
+  const [entries, setEntries] = useSecureStorage("entries_skills", [], sessionKey);
   const [skillStr]=useSecureStorage("sys_skill","AI/ML, PMP, Both", sessionKey);
-  const [sub,setSub]=useSecureStorage("sk_sub", null, sessionKey);
-  const [learned,setLearned]=useSecureStorage("sk_learned", "", sessionKey);
-  const [h,setH]=useSecureStorage("sk_h", 0, sessionKey); 
-  const [m,setM]=useSecureStorage("sk_m", 50, sessionKey);
+  const [sub,setSub]=useState(null);
+  const [learned,setLearned]=useState("");
+  const [h,setH]=useState(0); 
+  const [m,setM]=useState(30);
   
   const { startTime, setStartTime, elapsed } = useStopwatch("skills", sessionKey);
-  const log = `Subject: ${sub}\nLearned: ${learned}`;
+
+  function add(exactTime = null) {
+    if (!sub || !learned.trim()) {
+      alert("Please select a Subject and type your Insights first.");
+      return false;
+    }
+    const timeToLog = exactTime !== null ? exactTime : (h > 0 ? `${h}h ${m}m` : `${m}m`);
+    setEntries([...entries, { id: Date.now(), sub, text: learned, time: timeToLog, date: fmtDate() }]);
+    setSub(null); setLearned(""); setH(0); setM(30);
+    return true;
+  }
+
+  const log = entries.map(e => `${e.date} | ${e.sub} | ${e.time} | ${e.text}`).join("\n");
 
   return <div>
     <div className="card">
@@ -610,19 +623,17 @@ function Skills({ sessionKey }){
       <span className="lbl">Subject</span>
       <div style={{display:"flex",gap:8,marginBottom:12}}>{skillStr.split(",").map(s=><Tag key={s} label={s.trim()} sel={sub===s.trim()} onClick={()=>setSub(s.trim())}/>)}</div>
       
-<div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
+      <div style={{display:"flex", gap:16, alignItems:"center", justifyContent:"space-between", marginBottom: 12}}>
         <Dur h={h} m={m} sh={setH} sm={setM}/>
         <button onClick={() => {
           if (!startTime) { 
-            // 1. VALIDATION: Require Subject and Insights before starting
             if (!sub || !learned.trim()) { 
-              alert("Please select a Subject and type what you are studying in the Insights box before starting the clock."); 
+              alert("Please select a Subject and type your Insights before starting the clock."); 
               return; 
             }
             setStartTime(Date.now()); 
           } 
           else {
-            // 2. STOP & LOG: Calculate exact seconds and bypass the manual selectors entirely
             const diffSecs = Math.floor((Date.now() - startTime) / 1000);
             let timeString = "";
             if (diffSecs < 60) {
@@ -632,9 +643,7 @@ function Skills({ sessionKey }){
               const secs = diffSecs % 60;
               timeString = `${mins}m ${secs}s`;
             }
-            
-            // 3. REGISTER ENTRY: Append exact time directly to the Insights notepad
-            setLearned(prev => prev + (prev.endsWith("\n") ? "" : "\n") + `[Tracked Session: ${timeString}]\n`);
+            add(timeString);
             setStartTime(null);
           }
         }} className="pbtn" style={{width:"auto", padding:"10px 16px", borderRadius:14, background: startTime ? "#FF3B30" : "#1C1C1E", margin:0, fontFamily:"monospace"}}>
@@ -644,11 +653,21 @@ function Skills({ sessionKey }){
 
       <span className="lbl">Insights</span>
       <textarea rows={3} value={learned} onChange={e=>setLearned(e.target.value)} placeholder="Key takeaways..." className="inp"/>
+      <button onClick={() => add(null)} className="pbtn" style={{ background: "#1C1C1E", opacity: startTime ? 0.3 : 1 }}>+ Save Entry</button>
     </div>
-    <AIBtn label="Skill Progress" prompt={log} sessionKey={sessionKey} />
+
+    {entries.slice().reverse().map(e => (
+      <div key={e.id} className="card" style={{ borderLeft: "4px solid #5E5CE6" }}>
+        <button className="dbtn" onClick={() => setEntries(entries.filter(x => x.id !== e.id))}>×</button>
+        <span style={{ fontSize: 11, fontWeight: 700 }}>{e.sub}</span>
+        <div style={{ fontSize: 15, marginTop: 6 }}>{e.text}</div>
+        <div style={{ fontSize: 12, color: "#8E8E93", marginTop: 8 }}>{e.date} · ⌚ {e.time}</div>
+      </div>
+    ))}
+
+    <AIBtn label="Skill Progress Review" prompt={log} sessionKey={sessionKey} />
   </div>;
 }
-
 function Spiritual({ sessionKey }) {
   const [spiritStr]=useSecureStorage("sys_spirit","Bible, Prayer, Reflection, Fasting, Other", sessionKey);
   const [types,setTypes]=useSecureStorage("sp_types", [], sessionKey);
