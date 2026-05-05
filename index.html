@@ -613,9 +613,9 @@ function Gym({ sessionKey }){
       <span className="lbl">Exercise</span>
       <input value={en} onChange={e=>setEn(e.target.value)} placeholder="Name (e.g. Bench Press)..." className="inp"/>
       <div style={{display:"flex",gap:8}}>
-        <input value={es} onChange={e=>setEs(e.target.value)} placeholder="Sets" className="inp"/>
-        <input value={er} onChange={e=>setEr(e.target.value)} placeholder="Reps" className="inp"/>
-        <input value={ew} onChange={e=>setEw(e.target.value)} placeholder="kg" className="inp"/>
+        <input type="number" value={es} onChange={e=>setEs(e.target.value)} placeholder="Sets" className="inp" style={{flex: 1}}/>
+        <input type="number" value={er} onChange={e=>setEr(e.target.value)} placeholder="Reps" className="inp" style={{flex: 1}}/>
+        <input type="number" step="any" value={ew} onChange={e=>setEw(e.target.value)} placeholder="kg" className="inp" style={{flex: 1}}/>
       </div>
       <button onClick={() => addEx(null)} className="pbtn" style={{background:"#34C759", opacity: startTime ? 0.3 : 1}}>Add</button>
     </div>
