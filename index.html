@@ -134,13 +134,13 @@ h1, h2, h3, h4, .stat-value {
 }
 
 .sbtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   border: none;
   background: #F2F2F7;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 16px;
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
   color: #5E5CE6;
@@ -296,21 +296,21 @@ function Tag({label,sel,onClick,bg,tx,br}){
 }
 
 function Dur({h,m,sh,sm}){
-  return <div style={{display:"flex",gap:16,alignItems:"center"}}>
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+  return <div style={{display:"flex",gap:10,alignItems:"center"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
       <span style={{fontSize:10,color:"#8E8E93",fontWeight:700,letterSpacing:1}}>HOURS</span>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
+      <div style={{display:"flex",alignItems:"center",gap:4}}>
         <button className="sbtn" onClick={()=>sh(Math.max(0,h-1))}>-</button>
-        <span style={{fontSize:22,fontWeight:700,minWidth:32,textAlign:"center",fontFamily:"'Outfit',sans-serif"}}>{h}</span>
+        <span style={{fontSize:22,fontWeight:700,minWidth:28,textAlign:"center",fontFamily:"'Outfit',sans-serif"}}>{h}</span>
         <button className="sbtn" onClick={()=>sh(Math.min(12,h+1))}>+</button>
       </div>
     </div>
-    <span style={{fontSize:24,color:"#C7C7CC",marginTop:18,fontFamily:"'Outfit',sans-serif"}}>:</span>
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+    <span style={{fontSize:24,color:"#C7C7CC",marginTop:16,fontFamily:"'Outfit',sans-serif"}}>:</span>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
       <span style={{fontSize:10,color:"#8E8E93",fontWeight:700,letterSpacing:1}}>MINS</span>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
+      <div style={{display:"flex",alignItems:"center",gap:4}}>
         <button className="sbtn" onClick={()=>sm(Math.max(0,m-5))}>-</button>
-        <span style={{fontSize:22,fontWeight:700,minWidth:32,textAlign:"center",fontFamily:"'Outfit',sans-serif"}}>{m}</span>
+        <span style={{fontSize:22,fontWeight:700,minWidth:28,textAlign:"center",fontFamily:"'Outfit',sans-serif"}}>{m}</span>
         <button className="sbtn" onClick={()=>sm(Math.min(55,m+5))}>+</button>
       </div>
     </div>
