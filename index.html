@@ -547,10 +547,33 @@ function Gym({ sessionKey }){
     setEn("");setEs("");setEr("");setEw("");
   }
   
+  // Helper to safely convert text times (with NaN protection)
+  const parseTime = (val) => {
+    if (!val) return 0;
+    const s = String(val);
+    if (s.includes("NaN")) return 0; 
+    let t = 0;
+    if (s.includes('h')) { const m = s.match(/(\d+)h/); if(m) t += parseInt(m[1])*60; }
+    if (s.includes('m')) { const m = s.match(/(\d+)m/); if(m) t += parseInt(m[1]); }
+    if (s.includes('s') && !s.includes('m') && !s.includes('h')) t += 1; 
+    if (!s.includes('h') && !s.includes('m') && !s.includes('s')) {
+      const parsed = parseInt(s);
+      if (!isNaN(parsed)) t += parsed;
+    }
+    return t;
+  };
+
+  const dailyTotals = exs.reduce((acc, e) => {
+     if(!acc[e.date]) acc[e.date] = { count: 0, mins: 0 };
+     acc[e.date].count += 1;
+     acc[e.date].mins += parseTime(e.time);
+     return acc;
+  }, {});
+
   const log = `Target: ${muscle}\nExercises:\n${exs.map(e=>"- "+e.n+": "+e.s+"x"+e.r+" @ "+e.w+"kg ("+e.time+")").join("\n")}`;
 
   return <div>
-    <div className="card">
+    <div className="card" style={{marginBottom: 8}}>
       <CurrentTime />
       <span className="lbl">Target</span>
       <div style={{display:"flex",flexWrap:"wrap",marginBottom:12}}>{gymStr.split(",").map(g=><Tag key={g} label={g.trim()} sel={muscle===g.trim()} onClick={()=>setMuscle(g.trim())}/>)}</div>
@@ -595,13 +618,29 @@ function Gym({ sessionKey }){
         <input value={ew} onChange={e=>setEw(e.target.value)} placeholder="kg" className="inp"/>
       </div>
       <button onClick={() => addEx(null)} className="pbtn" style={{background:"#34C759", opacity: startTime ? 0.3 : 1}}>Add</button>
-      {exs.map(e=>(
-        <div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F2F2F7"}}>
-          <div><div style={{fontSize:14,fontWeight:500}}>{e.n}</div><div style={{fontSize:11,color:"#8E8E93"}}>{e.date} · {e.target} · ⌚ {e.time}</div></div>
-          <div style={{fontWeight:700, color:"#34C759"}}>{e.s}x{e.r} @ {e.w}kg <button onClick={()=>setExs(exs.filter(x=>x.id!==e.id))} className="dbtn">×</button></div>
-        </div>
-      ))}
     </div>
+
+    {exs.slice().reverse().map((e, i, arr) => {
+      const showHeader = i === 0 || arr[i - 1].date !== e.date;
+      const dayStats = dailyTotals[e.date];
+      const dh = Math.floor(dayStats.mins / 60);
+      const dm = dayStats.mins % 60;
+      
+      return (
+        <div key={e.id}>
+          {showHeader && (
+            <div style={{fontSize: 11, color: "#8E8E93", fontWeight: 800, margin: "24px 0 8px 4px", textTransform: "uppercase", letterSpacing: 0.5}}>
+              {e.date} &nbsp;·&nbsp; {dayStats.count} EXERCISES &nbsp;·&nbsp; ⏱ {dh > 0 ? `${dh}h ` : ""}{dm}m
+            </div>
+          )}
+          <div className="card" style={{display:"flex",justifyContent:"space-between",padding:"16px",marginBottom:12,borderLeft:"4px solid #34C759"}}>
+            <div><div style={{fontSize:15,fontWeight:700}}>{e.n}</div><div style={{fontSize:12,color:"#8E8E93",marginTop:6}}>{e.target} · ⌚ {e.time}</div></div>
+            <div style={{fontWeight:800, color:"#34C759", textAlign:"right"}}>{e.s}x{e.r} <br/><span style={{fontSize:12,color:"#1C1C1E"}}>@ {e.w}kg</span> <button onClick={()=>setExs(exs.filter(x=>x.id!==e.id))} className="dbtn" style={{marginLeft:8}}>×</button></div>
+          </div>
+        </div>
+      );
+    })}
+
     <AIBtn label="Performance Review" prompt={log} sessionKey={sessionKey} />
   </div>;
 }
@@ -622,13 +661,16 @@ function Skills({ sessionKey }){
 
   const parseTime = (val) => {
     if (!val) return 0;
-    if (typeof val === 'number') return val;
     const s = String(val);
+    if (s.includes("NaN")) return 0; // Legacy data protection
     let t = 0;
     if (s.includes('h')) { const m = s.match(/(\d+)h/); if(m) t += parseInt(m[1])*60; }
     if (s.includes('m')) { const m = s.match(/(\d+)m/); if(m) t += parseInt(m[1]); }
     if (s.includes('s') && !s.includes('m') && !s.includes('h')) t += 1;
-    if (!s.includes('h') && !s.includes('m') && !s.includes('s')) t += parseInt(s) || 0; 
+    if (!s.includes('h') && !s.includes('m') && !s.includes('s')) {
+      const parsed = parseInt(s);
+      if (!isNaN(parsed)) t += parsed;
+    }
     return t;
   };
 
