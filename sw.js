@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chronicles-engine-v1.1';
+const CACHE_NAME = 'chronicles-engine-v1.2';
 
 // These are the exact files your phone needs to run the app without internet
 const urlsToCache = [
